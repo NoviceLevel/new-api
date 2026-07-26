@@ -24,17 +24,24 @@ import { Footer } from '@/components/layout/components/footer'
 import { RichContent } from '@/components/rich-content'
 import { useTheme } from '@/context/theme-provider'
 import { isLikelyHtml } from '@/lib/content-format'
-import { useAuthStore } from '@/stores/auth-store'
 
-import { CTA, Features, Hero, HowItWorks, Stats } from './components'
+import { Hero } from './components'
 import { useHomePageContent } from './hooks'
+
+// The hero is a dark full-bleed image, so the transparent top-state header needs
+// light text to stay legible. Once scrolled the header becomes a light capsule,
+// where the default tokens are already correct.
+const heroHeaderTone = [
+  'data-[scrolled=false]:[&_nav_a]:text-white/75',
+  'data-[scrolled=false]:[&_nav_a:hover]:text-white',
+  'data-[scrolled=false]:[&_nav_span]:text-white',
+  'data-[scrolled=false]:[&_nav_button]:text-white',
+].join(' ')
 
 export function Home() {
   const { i18n, t } = useTranslation()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const { resolvedTheme } = useTheme()
-  const { auth } = useAuthStore()
-  const isAuthenticated = !!auth.user
   const { content, isLoaded, isUrl } = useHomePageContent()
 
   const syncIframePreferences = useCallback(() => {
@@ -61,8 +68,8 @@ export function Home() {
   if (!isLoaded) {
     return (
       <PublicLayout showMainContainer={false}>
-        <main className='flex min-h-screen items-center justify-center'>
-          <div className='text-muted-foreground'>{t('Loading...')}</div>
+        <main className='dark min-h-svh bg-[#05080a] text-white'>
+          <span className='sr-only'>{t('Loading...')}</span>
         </main>
       </PublicLayout>
     )
@@ -121,13 +128,12 @@ export function Home() {
   }
 
   return (
-    <PublicLayout showMainContainer={false}>
-      <Hero isAuthenticated={isAuthenticated} />
-      <Stats />
-      <Features />
-      <HowItWorks />
-      <CTA isAuthenticated={isAuthenticated} />
-      <Footer />
+    <PublicLayout
+      showMainContainer={false}
+      headerProps={{ className: heroHeaderTone }}
+    >
+      <Hero />
+      <Footer className='border-black/10 bg-[#f4f6f7] text-[#111820] transition-colors duration-500 dark:border-white/10 dark:bg-[#05080a] dark:text-white' />
     </PublicLayout>
   )
 }
