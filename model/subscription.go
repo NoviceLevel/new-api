@@ -160,6 +160,11 @@ type SubscriptionPlan struct {
 	Enabled   bool `json:"enabled" gorm:"default:true"`
 	SortOrder int  `json:"sort_order" gorm:"type:int;default:0"`
 
+	// IsDailyGift keeps the reward plan out of ordinary storefront and admin
+	// plan lists. Its Enabled flag controls whether new daily gifts can be
+	// claimed.
+	IsDailyGift bool `json:"is_daily_gift" gorm:"default:false;index"`
+
 	AllowBalancePay *bool `json:"allow_balance_pay"`
 
 	// Allow falling back to wallet balance after subscription quota is exhausted (empty = true)

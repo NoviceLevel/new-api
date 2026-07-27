@@ -3,10 +3,12 @@ package controller
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
+	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -25,6 +27,7 @@ type dailyGiftResponse struct {
 	ExpiresAt int64          `json:"expires_at"`
 	Scratched bool           `json:"scratched"`
 	Redeemed  bool           `json:"redeemed"`
+	Enabled   bool           `json:"enabled"`
 	Prize     dailyGiftPrize `json:"prize"`
 }
 
@@ -45,11 +48,24 @@ func dailyGiftPlanName(planID int) string {
 	return dailyGiftPlanTitle
 }
 
-func makeDailyGiftResponse(gift *model.DailyGift, now time.Time) dailyGiftResponse {
+func dailyGiftPlan() (*model.SubscriptionPlan, error) {
+	var plan model.SubscriptionPlan
+	err := model.DB.Where("is_daily_gift = ?", true).Order("id asc").First(&plan).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &plan, nil
+}
+
+func makeDailyGiftResponse(gift *model.DailyGift, now time.Time, plan *model.SubscriptionPlan) dailyGiftResponse {
 	date, expiresAt := dailyGiftDay(now)
 	response := dailyGiftResponse{
 		GiftDate:  date,
 		ExpiresAt: expiresAt,
+		Enabled:   plan != nil && plan.Enabled,
 		Prize:     dailyGiftPrize{Name: dailyGiftPlanTitle},
 	}
 	if gift != nil {
@@ -73,44 +89,16 @@ func getDailyGift(userID int, date string) (*model.DailyGift, error) {
 	return &gift, nil
 }
 
-// ensureDailyGiftPlanTx creates the hidden local equivalent of the source
-// site's LightSnow daily subscription when a restored database has no plans.
-func ensureDailyGiftPlanTx(tx *gorm.DB) (*model.SubscriptionPlan, error) {
+func dailyGiftPlanTx(tx *gorm.DB) (*model.SubscriptionPlan, error) {
 	var plan model.SubscriptionPlan
-	err := tx.Where("title = ? AND subtitle = ?", dailyGiftPlanTitle, dailyGiftPlanSubtitle).First(&plan).Error
+	err := tx.Where("is_daily_gift = ?", true).Order("id asc").First(&plan).Error
 	if err == nil {
-		if plan.Enabled {
-			if err := tx.Model(&model.SubscriptionPlan{}).Where("id = ?", plan.Id).Update("enabled", false).Error; err != nil {
-				return nil, err
-			}
-			plan.Enabled = false
-		}
 		return &plan, nil
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	plan = model.SubscriptionPlan{
-		Title:         dailyGiftPlanTitle,
-		Subtitle:      dailyGiftPlanSubtitle,
-		PriceAmount:   0,
-		Currency:      "USD",
-		DurationUnit:  model.SubscriptionDurationDay,
-		DurationValue: 1,
-		TotalAmount:   0,
-		Enabled:       false,
-		SortOrder:     -1000,
-	}
-	if err := tx.Create(&plan).Error; err != nil {
-		return nil, err
-	}
-	// SubscriptionPlan.Enabled has a database default of true. Persist the
-	// hidden gift-plan state explicitly after Create applies that default.
-	if err := tx.Model(&model.SubscriptionPlan{}).Where("id = ?", plan.Id).Update("enabled", false).Error; err != nil {
-		return nil, err
-	}
-	plan.Enabled = false
-	return &plan, nil
+	return nil, nil
 }
 
 func dailyGiftJSON(c *gin.Context, response dailyGiftResponse) {
@@ -120,12 +108,17 @@ func dailyGiftJSON(c *gin.Context, response dailyGiftResponse) {
 func GetDailyGift(c *gin.Context) {
 	now := time.Now()
 	date, _ := dailyGiftDay(now)
+	plan, err := dailyGiftPlan()
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
 	gift, err := getDailyGift(c.GetInt("id"), date)
 	if err != nil {
 		common.ApiError(c, err)
 		return
 	}
-	dailyGiftJSON(c, makeDailyGiftResponse(gift, now))
+	dailyGiftJSON(c, makeDailyGiftResponse(gift, now, plan))
 }
 
 func ScratchDailyGift(c *gin.Context) {
@@ -143,9 +136,12 @@ func ScratchDailyGift(c *gin.Context) {
 		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
-		plan, err := ensureDailyGiftPlanTx(tx)
+		plan, err := dailyGiftPlanTx(tx)
 		if err != nil {
 			return err
+		}
+		if plan == nil || !plan.Enabled {
+			return errors.New("daily gift is disabled")
 		}
 		gift = model.DailyGift{
 			UserId:      userID,
@@ -158,7 +154,12 @@ func ScratchDailyGift(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
-	dailyGiftJSON(c, makeDailyGiftResponse(&gift, now))
+	plan, err := dailyGiftPlan()
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	dailyGiftJSON(c, makeDailyGiftResponse(&gift, now, plan))
 }
 
 func RedeemDailyGift(c *gin.Context) {
@@ -192,5 +193,88 @@ func RedeemDailyGift(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
-	dailyGiftJSON(c, makeDailyGiftResponse(&gift, now))
+	plan, err := dailyGiftPlan()
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	dailyGiftJSON(c, makeDailyGiftResponse(&gift, now, plan))
+}
+
+func normalizeDailyGiftPlan(plan *model.SubscriptionPlan) error {
+	plan.Title = strings.TrimSpace(plan.Title)
+	if plan.Title == "" {
+		plan.Title = dailyGiftPlanTitle
+	}
+	plan.Subtitle = strings.TrimSpace(plan.Subtitle)
+	if plan.Subtitle == "" {
+		plan.Subtitle = dailyGiftPlanSubtitle
+	}
+	if plan.DurationUnit == "" {
+		plan.DurationUnit = model.SubscriptionDurationDay
+	}
+	if plan.DurationValue <= 0 && plan.DurationUnit != model.SubscriptionDurationCustom {
+		plan.DurationValue = 1
+	}
+	if plan.DurationUnit == model.SubscriptionDurationCustom && plan.CustomSeconds <= 0 {
+		return errors.New("custom duration must be greater than zero")
+	}
+	if plan.TotalAmount < 0 {
+		return errors.New("daily gift quota cannot be negative")
+	}
+	plan.UpgradeGroup = strings.TrimSpace(plan.UpgradeGroup)
+	if plan.UpgradeGroup != "" {
+		if _, ok := ratio_setting.GetGroupRatioCopy()[plan.UpgradeGroup]; !ok {
+			return errors.New("daily gift upgrade group does not exist")
+		}
+	}
+	plan.DowngradeGroup = strings.TrimSpace(plan.DowngradeGroup)
+	if plan.DowngradeGroup != "" {
+		if _, ok := ratio_setting.GetGroupRatioCopy()[plan.DowngradeGroup]; !ok {
+			return errors.New("daily gift downgrade group does not exist")
+		}
+	}
+	plan.QuotaResetPeriod = model.NormalizeResetPeriod(plan.QuotaResetPeriod)
+	if plan.QuotaResetPeriod == model.SubscriptionResetCustom && plan.QuotaResetCustomSeconds <= 0 {
+		return errors.New("daily gift custom reset period must be greater than zero")
+	}
+	plan.PriceAmount = 0
+	plan.Currency = "USD"
+	plan.SortOrder = -1000
+	plan.IsDailyGift = true
+	plan.AllowBalancePay = common.GetPointer(false)
+	if plan.AllowWalletOverflow == nil {
+		plan.AllowWalletOverflow = common.GetPointer(true)
+	}
+	return nil
+}
+
+func upsertDailyGiftPlan(rewardPlan *model.SubscriptionPlan) error {
+	return model.DB.Transaction(func(tx *gorm.DB) error {
+		existingPlan, err := dailyGiftPlanTx(tx)
+		if err != nil {
+			return err
+		}
+		if existingPlan == nil {
+			return tx.Create(rewardPlan).Error
+		}
+		rewardPlan.Id = existingPlan.Id
+		return tx.Model(&model.SubscriptionPlan{}).Where("id = ?", existingPlan.Id).Updates(map[string]interface{}{
+			"title":                      rewardPlan.Title,
+			"subtitle":                   rewardPlan.Subtitle,
+			"duration_unit":              rewardPlan.DurationUnit,
+			"duration_value":             rewardPlan.DurationValue,
+			"custom_seconds":             rewardPlan.CustomSeconds,
+			"enabled":                    rewardPlan.Enabled,
+			"total_amount":               rewardPlan.TotalAmount,
+			"upgrade_group":              rewardPlan.UpgradeGroup,
+			"downgrade_group":            rewardPlan.DowngradeGroup,
+			"quota_reset_period":         rewardPlan.QuotaResetPeriod,
+			"quota_reset_custom_seconds": rewardPlan.QuotaResetCustomSeconds,
+			"allow_balance_pay":          false,
+			"allow_wallet_overflow":      *rewardPlan.AllowWalletOverflow,
+			"is_daily_gift":              true,
+			"updated_at":                 common.GetTimestamp(),
+		}).Error
+	})
 }

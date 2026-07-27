@@ -36,7 +36,7 @@ func GetSubscriptionPlans(c *gin.Context) {
 	}
 
 	var plans []model.SubscriptionPlan
-	if err := model.DB.Where("enabled = ?", true).Order("sort_order desc, id desc").Find(&plans).Error; err != nil {
+	if err := model.DB.Where("enabled = ? AND is_daily_gift = ?", true, false).Order("sort_order desc, id desc").Find(&plans).Error; err != nil {
 		common.ApiError(c, err)
 		return
 	}
@@ -120,7 +120,7 @@ func SubscriptionRequestBalancePay(c *gin.Context) {
 
 func AdminListSubscriptionPlans(c *gin.Context) {
 	var plans []model.SubscriptionPlan
-	if err := model.DB.Order("sort_order desc, id desc").Find(&plans).Error; err != nil {
+	if err := model.DB.Where("is_daily_gift = ?", false).Order("sort_order desc, id desc").Find(&plans).Error; err != nil {
 		common.ApiError(c, err)
 		return
 	}
@@ -149,6 +149,20 @@ func AdminCreateSubscriptionPlan(c *gin.Context) {
 		return
 	}
 	req.Plan.Id = 0
+	if req.Plan.IsDailyGift {
+		if err := normalizeDailyGiftPlan(&req.Plan); err != nil {
+			common.ApiError(c, err)
+			return
+		}
+		if err := upsertDailyGiftPlan(&req.Plan); err != nil {
+			common.ApiError(c, err)
+			return
+		}
+		model.InvalidateSubscriptionPlanCache(req.Plan.Id)
+		common.ApiSuccess(c, req.Plan)
+		return
+	}
+	req.Plan.IsDailyGift = false
 	if strings.TrimSpace(req.Plan.Title) == "" {
 		common.ApiErrorMsg(c, "套餐标题不能为空")
 		return
@@ -221,6 +235,15 @@ func AdminUpdateSubscriptionPlan(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if id <= 0 {
 		common.ApiErrorMsg(c, "无效的ID")
+		return
+	}
+	var existingPlan model.SubscriptionPlan
+	if err := model.DB.Select("is_daily_gift").First(&existingPlan, id).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if existingPlan.IsDailyGift {
+		common.ApiErrorMsg(c, "daily gift plans must be updated through the daily gift settings")
 		return
 	}
 	var req AdminUpsertSubscriptionPlanRequest
@@ -333,6 +356,15 @@ func AdminUpdateSubscriptionPlanStatus(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if id <= 0 {
 		common.ApiErrorMsg(c, "无效的ID")
+		return
+	}
+	var existingPlan model.SubscriptionPlan
+	if err := model.DB.Select("is_daily_gift").First(&existingPlan, id).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if existingPlan.IsDailyGift {
+		common.ApiErrorMsg(c, "daily gift plans must be updated through the daily gift settings")
 		return
 	}
 	var req AdminUpdateSubscriptionPlanStatusRequest
