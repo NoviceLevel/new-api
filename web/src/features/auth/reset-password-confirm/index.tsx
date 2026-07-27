@@ -107,17 +107,12 @@ export function ResetPasswordConfirm({
 
   return (
     <AuthLayout>
-      <div className='w-full space-y-8'>
-        <div className='space-y-2'>
-          <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>
-            {t('Reset password')}
-          </h2>
-          <p className='text-muted-foreground text-left text-sm sm:text-base'>
-            {newPassword
-              ? t('auth.resetPasswordConfirm.success')
-              : t('auth.resetPasswordConfirm.description')}
-          </p>
-        </div>
+      <div className='w-full space-y-6'>
+        <p className='text-muted-foreground text-left text-sm sm:text-base'>
+          {newPassword
+            ? t('auth.resetPasswordConfirm.success')
+            : t('auth.resetPasswordConfirm.description')}
+        </p>
 
         <div className='space-y-4'>
           {!isValidResetLink && (
