@@ -23,12 +23,13 @@ type dailyGiftPrize struct {
 }
 
 type dailyGiftResponse struct {
-	GiftDate  string         `json:"gift_date"`
-	ExpiresAt int64          `json:"expires_at"`
-	Scratched bool           `json:"scratched"`
-	Redeemed  bool           `json:"redeemed"`
-	Enabled   bool           `json:"enabled"`
-	Prize     dailyGiftPrize `json:"prize"`
+	GiftDate   string         `json:"gift_date"`
+	ExpiresAt  int64          `json:"expires_at"`
+	Scratched  bool           `json:"scratched"`
+	Redeemed   bool           `json:"redeemed"`
+	Configured bool           `json:"configured"`
+	Enabled    bool           `json:"enabled"`
+	Prize      dailyGiftPrize `json:"prize"`
 }
 
 func dailyGiftDay(now time.Time) (string, int64) {
@@ -39,13 +40,13 @@ func dailyGiftDay(now time.Time) (string, int64) {
 
 func dailyGiftPlanName(planID int) string {
 	if planID == 0 {
-		return dailyGiftPlanTitle
+		return ""
 	}
 	var plan model.SubscriptionPlan
 	if err := model.DB.Select("title").First(&plan, planID).Error; err == nil && plan.Title != "" {
 		return plan.Title
 	}
-	return dailyGiftPlanTitle
+	return ""
 }
 
 func dailyGiftPlan() (*model.SubscriptionPlan, error) {
@@ -63,10 +64,13 @@ func dailyGiftPlan() (*model.SubscriptionPlan, error) {
 func makeDailyGiftResponse(gift *model.DailyGift, now time.Time, plan *model.SubscriptionPlan) dailyGiftResponse {
 	date, expiresAt := dailyGiftDay(now)
 	response := dailyGiftResponse{
-		GiftDate:  date,
-		ExpiresAt: expiresAt,
-		Enabled:   plan != nil && plan.Enabled,
-		Prize:     dailyGiftPrize{Name: dailyGiftPlanTitle},
+		GiftDate:   date,
+		ExpiresAt:  expiresAt,
+		Configured: plan != nil,
+		Enabled:    plan != nil && plan.Enabled,
+	}
+	if plan != nil {
+		response.Prize.Name = plan.Title
 	}
 	if gift != nil {
 		response.GiftDate = gift.GiftDate

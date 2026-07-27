@@ -323,9 +323,6 @@ func migrateDB() error {
 			return err
 		}
 	}
-	if err := migrateLegacyDailyGiftPlans(); err != nil {
-		return err
-	}
 	return nil
 }
 
