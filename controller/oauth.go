@@ -20,13 +20,15 @@ import (
 const oauthAuthFlowTTL = 10 * time.Minute
 
 type oauthStateRequest struct {
-	Provider string `json:"provider"`
-	Intent   string `json:"intent"`
-	Aff      string `json:"aff,omitempty"`
+	Provider       string `json:"provider"`
+	Intent         string `json:"intent"`
+	Aff            string `json:"aff,omitempty"`
+	InvitationCode string `json:"invitation_code,omitempty"`
 }
 
 type oauthFlowPayload struct {
-	AffiliateCode string `json:"affiliate_code,omitempty"`
+	AffiliateCode  string `json:"affiliate_code,omitempty"`
+	InvitationCode string `json:"invitation_code,omitempty"`
 }
 
 // providerParams returns map with Provider key for i18n templates
@@ -37,16 +39,24 @@ func providerParams(name string) map[string]any {
 // GenerateOAuthCode generates a state code for OAuth CSRF protection
 func GenerateOAuthCode(c *gin.Context) {
 	var request oauthStateRequest
-	if err := common.DecodeJson(c.Request.Body, &request); err != nil {
+	if c.Request.Method == http.MethodGet {
+		request.Provider = c.Query("provider")
+		request.Intent = c.DefaultQuery("intent", model.AuthFlowIntentLogin)
+		request.Aff = c.Query("aff")
+		request.InvitationCode = c.Query("invitation_code")
+	} else if err := common.DecodeJson(c.Request.Body, &request); err != nil {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		return
 	}
 	request.Provider = strings.TrimSpace(request.Provider)
 	request.Intent = strings.TrimSpace(request.Intent)
 	request.Aff = strings.TrimSpace(request.Aff)
+	request.InvitationCode = strings.TrimSpace(request.InvitationCode)
 	if oauth.GetProvider(request.Provider) == nil ||
 		(request.Intent != model.AuthFlowIntentLogin && request.Intent != model.AuthFlowIntentBind) ||
 		len(request.Aff) > 32 ||
+		len(request.InvitationCode) > 64 ||
+		(request.Provider != "linuxdo" && request.InvitationCode != "") ||
 		(request.Intent == model.AuthFlowIntentBind && request.Aff != "") {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		return
@@ -62,7 +72,7 @@ func GenerateOAuthCode(c *gin.Context) {
 		userID = identity.UserID
 		sessionID = identity.SessionID
 	}
-	payload, err := common.Marshal(oauthFlowPayload{AffiliateCode: request.Aff})
+	payload, err := common.Marshal(oauthFlowPayload{AffiliateCode: request.Aff, InvitationCode: request.InvitationCode})
 	if err != nil {
 		common.ApiError(c, err)
 		return
@@ -193,13 +203,15 @@ func HandleOAuth(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
-	user, err := findOrCreateOAuthUser(c, provider, oauthUser, payload.AffiliateCode)
+	user, err := findOrCreateOAuthUser(c, provider, oauthUser, payload.AffiliateCode, payload.InvitationCode)
 	if err != nil {
 		if errors.Is(err, model.ErrEmailAlreadyTaken) {
 			common.ApiErrorI18n(c, i18n.MsgUserEmailAlreadyTaken)
 			return
 		}
 		switch err.(type) {
+		case *InvitationCodeError:
+			common.ApiErrorMsg(c, "邀请码无效、已使用或已停用")
 		case *OAuthUserDeletedError:
 			common.ApiErrorI18n(c, i18n.MsgOAuthUserDeleted)
 		case *OAuthRegistrationDisabledError:
@@ -294,7 +306,7 @@ func handleOAuthBind(c *gin.Context, provider oauth.Provider, pendingFlow *model
 }
 
 // findOrCreateOAuthUser finds existing user or creates new user
-func findOrCreateOAuthUser(c *gin.Context, provider oauth.Provider, oauthUser *oauth.OAuthUser, affiliateCode string) (*model.User, error) {
+func findOrCreateOAuthUser(c *gin.Context, provider oauth.Provider, oauthUser *oauth.OAuthUser, affiliateCode, invitationCode string) (*model.User, error) {
 	user := &model.User{}
 
 	// Check if user already exists with new ID
@@ -365,6 +377,10 @@ func findOrCreateOAuthUser(c *gin.Context, provider oauth.Provider, oauthUser *o
 	}
 	user.Role = common.RoleCommonUser
 	user.Status = common.UserStatusEnabled
+	requireInvitation := common.LinuxDOOAuthInvitationRequired && provider.GetProviderPrefix() == "linuxdo_"
+	if requireInvitation && invitationCode == "" {
+		return nil, &InvitationCodeError{}
+	}
 
 	// Handle affiliate code
 	inviterId := 0
@@ -379,6 +395,11 @@ func findOrCreateOAuthUser(c *gin.Context, provider oauth.Provider, oauthUser *o
 			// Create user
 			if err := user.InsertWithTx(tx, inviterId); err != nil {
 				return err
+			}
+			if requireInvitation {
+				if err := model.ConsumeInvitationWithTx(tx, invitationCode, user.Id); err != nil {
+					return err
+				}
 			}
 
 			// Create OAuth binding
@@ -405,6 +426,11 @@ func findOrCreateOAuthUser(c *gin.Context, provider oauth.Provider, oauthUser *o
 			// Create user
 			if err := user.InsertWithTx(tx, inviterId); err != nil {
 				return err
+			}
+			if requireInvitation {
+				if err := model.ConsumeInvitationWithTx(tx, invitationCode, user.Id); err != nil {
+					return err
+				}
 			}
 
 			// Set the provider user ID on the user model and update
@@ -450,6 +476,12 @@ type OAuthEmailAlreadyTakenError struct{}
 
 func (e *OAuthEmailAlreadyTakenError) Error() string {
 	return "email is already in use"
+}
+
+type InvitationCodeError struct{}
+
+func (e *InvitationCodeError) Error() string {
+	return "invitation code is invalid"
 }
 
 // handleOAuthError handles OAuth errors and returns translated message

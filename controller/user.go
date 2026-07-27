@@ -208,6 +208,10 @@ func Register(c *gin.Context) {
 		common.ApiErrorI18n(c, i18n.MsgUserRegisterDisabled)
 		return
 	}
+	if common.InvitationRegistrationEnabled {
+		common.ApiErrorMsg(c, "邀请码注册已开启，请使用邀请码注册入口")
+		return
+	}
 	if !common.PasswordRegisterEnabled {
 		common.ApiErrorI18n(c, i18n.MsgUserPasswordRegisterDisabled)
 		return
