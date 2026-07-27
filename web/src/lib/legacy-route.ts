@@ -25,7 +25,6 @@ const legacyConsoleRoutes: Record<string, string> = {
   '/console/subscription': '/subscriptions',
   '/console/channel': '/channels',
   '/console/token': '/keys',
-  '/console/playground': '/playground',
   '/console/redemption': '/redemption-codes',
   '/console/user': '/users',
   '/console/personal': '/profile',
@@ -37,7 +36,6 @@ const legacyConsoleRoutes: Record<string, string> = {
 const legacySettingsTabs: Record<string, string> = {
   operation: '/system-settings/operations/behavior',
   dashboard: '/system-settings/content/dashboard',
-  chats: '/system-settings/content/chat',
   drawing: '/system-settings/content/drawing',
   payment: '/system-settings/billing/payment',
   ratio: '/system-settings/billing/model-pricing',
@@ -47,6 +45,15 @@ const legacySettingsTabs: Record<string, string> = {
   performance: '/system-settings/operations/performance',
   system: '/system-settings/site/system-info',
   other: '/system-settings/site/system-info',
+}
+
+const referenceSettingsRoutes: Record<string, string> = {
+  auth: '/system-settings/auth',
+  billing: '/system-settings/billing',
+  content: '/system-settings/content',
+  operations: '/system-settings/operations',
+  security: '/system-settings/security',
+  site: '/system-settings/site',
 }
 
 function normalizeLegacyPath(pathname: string): string {
@@ -89,15 +96,24 @@ export function resolveLegacyRoute(rawHref: string): string | null {
   if (pathname === '/console/chat') {
     return buildTargetHref('/dashboard', source)
   }
-  if (pathname.startsWith('/console/chat/')) {
-    const chatID = pathname.slice('/console/chat/'.length)
-    return buildTargetHref(chatID ? `/chat/${chatID}` : '/dashboard', source)
-  }
+  if (pathname.startsWith('/console/chat/')) return buildTargetHref('/dashboard', source)
 
   const target = legacyConsoleRoutes[pathname]
   if (target) return buildTargetHref(target, source)
   if (pathname.startsWith('/console/')) {
     return buildTargetHref('/dashboard', source)
+  }
+
+  const referenceSettingsMatch = pathname.match(
+    /^\/(auth|billing|content|operations|security|site)(?:\/([^/]+))?$/
+  )
+  if (referenceSettingsMatch) {
+    const [, section, subsection] = referenceSettingsMatch
+    const target = referenceSettingsRoutes[section]
+    return buildTargetHref(
+      subsection ? `${target}/${subsection}` : target,
+      source
+    )
   }
 
   return null

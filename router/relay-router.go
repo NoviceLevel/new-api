@@ -59,13 +59,14 @@ func SetRelayRouter(router *gin.Engine) {
 		})
 	}
 
-	playgroundRouter := router.Group("/pg")
-	playgroundRouter.Use(middleware.RouteTag("relay"))
-	playgroundRouter.Use(middleware.SystemPerformanceCheck())
-	playgroundRouter.Use(middleware.UserAuth(), middleware.Distribute())
-	{
-		playgroundRouter.POST("/chat/completions", controller.Playground)
-	}
+	// The former Playground relay namespace is intentionally retired.
+	router.Any("/pg", func(c *gin.Context) {
+		c.Status(404)
+	})
+	router.Any("/pg/*path", func(c *gin.Context) {
+		c.Status(404)
+	})
+
 	relayV1Router := router.Group("/v1")
 	relayV1Router.Use(middleware.RouteTag("relay"))
 	relayV1Router.Use(middleware.SystemPerformanceCheck())

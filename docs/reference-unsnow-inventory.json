@@ -3,7 +3,7 @@
   "assets": {
     "javascript": 100,
     "stylesheet": 40,
-    "total": 142
+    "total": 209
   },
   "mainBundle": "web/public/static/js/index.06144a8180.js",
   "routes": [

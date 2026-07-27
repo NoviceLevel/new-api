@@ -14,6 +14,7 @@ export default defineConfig(({ envMode }) => {
     : {
         on: {
           proxyRes(proxyRes: IncomingMessage) {
+            proxyRes.headers['cache-control'] = 'no-store'
             const setCookie = proxyRes.headers['set-cookie']
             if (!setCookie) return
             proxyRes.headers['set-cookie'] = setCookie.map((cookie) =>
@@ -23,7 +24,7 @@ export default defineConfig(({ envMode }) => {
         },
       }
   const proxy = Object.fromEntries(
-    (['/api', '/mj', '/pg'] as const).map((pathPrefix) => [
+    (['/api', '/mj'] as const).map((pathPrefix) => [
       pathPrefix,
       { target: serverUrl, changeOrigin: true, ...localCookieProxy },
     ])

@@ -32,14 +32,12 @@ describe('legacy frontend route migration', () => {
       '/console/subscription': '/subscriptions',
       '/console/channel': '/channels',
       '/console/token': '/keys',
-      '/console/playground': '/playground',
       '/console/redemption': '/redemption-codes',
       '/console/user': '/users',
       '/console/personal': '/profile',
       '/console/log': '/usage-logs',
       '/console/midjourney': '/usage-logs/drawing',
       '/console/task': '/usage-logs/task',
-      '/console/chat/42': '/chat/42',
     }
 
     for (const [source, target] of Object.entries(routes)) {
@@ -62,7 +60,6 @@ describe('legacy frontend route migration', () => {
     const settingsTabs = {
       operation: '/system-settings/operations/behavior',
       dashboard: '/system-settings/content/dashboard',
-      chats: '/system-settings/content/chat',
       drawing: '/system-settings/content/drawing',
       payment: '/system-settings/billing/payment',
       ratio: '/system-settings/billing/model-pricing',
@@ -83,6 +80,27 @@ describe('legacy frontend route migration', () => {
     assert.equal(
       resolveLegacyRoute('/console/setting?tab=unknown'),
       '/system-settings?tab=unknown'
+    )
+  })
+
+  test('maps reference settings routes to the consolidated local hierarchy', () => {
+    const routes = {
+      '/auth': '/system-settings/auth',
+      '/auth/oauth': '/system-settings/auth/oauth',
+      '/billing': '/system-settings/billing',
+      '/billing/payment': '/system-settings/billing/payment',
+      '/content/dashboard': '/system-settings/content/dashboard',
+      '/operations/performance': '/system-settings/operations/performance',
+      '/security/rate-limit': '/system-settings/security/rate-limit',
+      '/site/system-info': '/system-settings/site/system-info',
+    }
+
+    for (const [source, target] of Object.entries(routes)) {
+      assert.equal(resolveLegacyRoute(source), target)
+    }
+    assert.equal(
+      resolveLegacyRoute('/billing/payment?from=reference#gateway'),
+      '/system-settings/billing/payment?from=reference#gateway'
     )
   })
 
