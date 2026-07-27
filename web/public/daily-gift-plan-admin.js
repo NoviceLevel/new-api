@@ -1,6 +1,8 @@
 (() => {
   const marker = 'daily-gift-plan-type'
   let createGiftPlan = false
+  let giftPlanTitles = null
+  let giftPlanRequest = null
 
   const decorateCreateDialog = () => {
     if (location.pathname !== '/subscriptions') return
@@ -42,6 +44,37 @@
     }
   }
 
+  const decorateGiftRows = () => {
+    if (location.pathname !== '/subscriptions') return
+    if (giftPlanTitles === null) {
+      if (giftPlanRequest) return
+      giftPlanRequest = fetch('/api/subscription/admin/plans')
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload) => {
+          giftPlanTitles = new Set(
+            (payload?.data || [])
+              .filter((item) => item?.plan?.is_daily_gift)
+              .map((item) => item.plan.title)
+          )
+          decorateGiftRows()
+        })
+        .catch(() => {
+          giftPlanTitles = new Set()
+        })
+      return
+    }
+    document.querySelectorAll('table tr').forEach((row) => {
+      const title = [...giftPlanTitles].find((name) => row.textContent.includes(name))
+      const planCell = row.querySelector('td:nth-child(2)')
+      if (!title || !planCell || planCell.querySelector('[data-daily-gift-badge]')) return
+      const badge = document.createElement('span')
+      badge.dataset.dailyGiftBadge = 'true'
+      badge.className = 'daily-gift-plan-badge'
+      badge.textContent = '礼物套餐'
+      planCell.append(badge)
+    })
+  }
+
   const originalFetch = window.fetch.bind(window)
   window.fetch = (input, init = {}) => {
     const url = typeof input === 'string' ? input : input.url
@@ -73,10 +106,15 @@
     .daily-gift-plan-type { display: flex; gap: 18px; margin: 0 0 16px; padding: 12px; border: 1px solid var(--border, #d5d5d5); border-radius: 6px; }
     .daily-gift-plan-type legend { padding: 0 4px; font-size: 13px; font-weight: 600; }
     .daily-gift-plan-type label { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .daily-gift-plan-badge { display: inline-flex; margin-top: 4px; border: 1px solid #60a5fa; border-radius: 4px; color: #2563eb; padding: 1px 5px; font-size: 11px; font-weight: 600; }
   `
   document.head.append(style)
 
-  const observer = new MutationObserver(decorateCreateDialog)
+  const decorate = () => {
+    decorateCreateDialog()
+    decorateGiftRows()
+  }
+  const observer = new MutationObserver(decorate)
   observer.observe(document.documentElement, { childList: true, subtree: true })
-  decorateCreateDialog()
+  decorate()
 })()
