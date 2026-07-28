@@ -12,6 +12,16 @@
   box-shadow: 0 7px 18px rgb(0 0 0 / 18%);
 }
 
+.snowapi-dock-outer {
+  transition: left 200ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snowapi-dock-outer {
+    transition: none;
+  }
+}
+
 @media (min-width: 768px) {
   [data-slot='sidebar-wrapper']:has(
     [data-slot='sidebar'][data-side='left'][data-state='expanded']
