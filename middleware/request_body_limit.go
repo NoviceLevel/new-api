@@ -10,8 +10,20 @@ import (
 )
 
 func AnonymousRequestBodyLimit() gin.HandlerFunc {
+	return requestBodyLimitFunc(common.GetAnonymousRequestBodyLimitBytes)
+}
+
+// WebhookRequestBodyLimit returns a middleware that limits webhook request
+// bodies to a larger size than anonymous routes. Payment webhooks (Stripe,
+// Creem, Waffo, etc.) may carry line items and detailed payment data that
+// exceed the small anonymous limit, so this allows up to 10MB by default.
+func WebhookRequestBodyLimit() gin.HandlerFunc {
+	return requestBodyLimitFunc(common.GetWebhookRequestBodyLimitBytes)
+}
+
+func requestBodyLimitFunc(limitFn func() int64) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		maxBytes := common.GetAnonymousRequestBodyLimitBytes()
+		maxBytes := limitFn()
 		if maxBytes <= 0 || c.Request.Body == nil {
 			c.Next()
 			return

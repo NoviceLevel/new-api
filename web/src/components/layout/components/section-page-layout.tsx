@@ -98,6 +98,7 @@ export function SectionPageLayout(props: SectionPageLayoutProps) {
         </div>
 
         <div
+          data-slot='section-page-content'
           className={
             props.fixedContent
               ? 'min-h-0 flex-1 overflow-hidden px-3 pt-1 pb-3 sm:px-4 sm:pt-1.5 sm:pb-4'

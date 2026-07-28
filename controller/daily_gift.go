@@ -188,6 +188,9 @@ func RedeemDailyGift(c *gin.Context) {
 		if err := tx.First(&plan, gift.PrizePlanId).Error; err != nil {
 			return err
 		}
+		if !plan.Enabled {
+			return errors.New("daily gift is disabled")
+		}
 		if _, err := model.CreateUserSubscriptionFromPlanTx(tx, userID, &plan, "daily_gift"); err != nil {
 			return err
 		}

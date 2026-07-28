@@ -17,6 +17,7 @@ import (
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/checkout/session"
 	"github.com/stripe/stripe-go/v81/webhook"
@@ -160,7 +161,7 @@ func StripeWebhook(c *gin.Context) {
 	}
 
 	signature := c.GetHeader("Stripe-Signature")
-	logger.LogInfo(ctx, fmt.Sprintf("Stripe webhook 收到请求 path=%q client_ip=%s signature=%q body=%q", c.Request.RequestURI, c.ClientIP(), signature, string(payload)))
+	logger.LogInfo(ctx, fmt.Sprintf("Stripe webhook 收到请求 path=%q client_ip=%s signature=%q", c.Request.RequestURI, c.ClientIP(), signature))
 	event, err := webhook.ConstructEventWithOptions(payload, signature, setting.StripeWebhookSecret, webhook.ConstructEventOptions{
 		IgnoreAPIVersionMismatch: true,
 	})
@@ -252,7 +253,7 @@ func sessionAsyncPaymentFailed(ctx context.Context, event stripe.Event, callerIp
 		logger.LogError(ctx, fmt.Sprintf("Stripe 标记充值订单失败状态失败 trade_no=%s client_ip=%s error=%q", referenceId, callerIp, err.Error()))
 		return
 	}
-	logger.LogInfo(ctx, fmt.Sprintf("Stripe 充值订单已标记为失败 trade_no=%s client_ip=%s", referenceId, callerIp))
+	logger.LogWarn(ctx, fmt.Sprintf("Stripe 充值订单已标记为失败 trade_no=%s client_ip=%s", referenceId, callerIp))
 }
 
 // fulfillOrder is the shared logic for crediting quota after payment is confirmed.
@@ -399,7 +400,6 @@ func getStripePayMoney(amount float64, group string) float64 {
 	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
 		amount = amount / common.QuotaPerUnit
 	}
-	// Using float64 for monetary calculations is acceptable here due to the small amounts involved
 	topupGroupRatio := common.GetTopupGroupRatio(group)
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
@@ -411,7 +411,11 @@ func getStripePayMoney(amount float64, group string) float64 {
 			discount = ds
 		}
 	}
-	payMoney := amount * setting.StripeUnitPrice * topupGroupRatio * discount
+	amountDec := decimal.NewFromFloat(amount)
+	unitPriceDec := decimal.NewFromFloat(setting.StripeUnitPrice)
+	ratioDec := decimal.NewFromFloat(topupGroupRatio)
+	discountDec := decimal.NewFromFloat(discount)
+	payMoney := amountDec.Mul(unitPriceDec).Mul(ratioDec).Mul(discountDec).InexactFloat64()
 	return payMoney
 }
 
