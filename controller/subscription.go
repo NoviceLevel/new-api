@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
@@ -388,6 +389,48 @@ func AdminUpdateSubscriptionPlanStatus(c *gin.Context) {
 		return
 	}
 	if err := model.DB.Model(&model.SubscriptionPlan{}).Where("id = ?", id).Update("enabled", *req.Enabled).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	model.InvalidateSubscriptionPlanCache(id)
+	common.ApiSuccess(c, nil)
+}
+
+func AdminDeleteSubscriptionPlan(c *gin.Context) {
+	if !requirePaymentCompliance(c) {
+		return
+	}
+
+	id, _ := strconv.Atoi(c.Param("id"))
+	if id <= 0 {
+		common.ApiErrorMsg(c, "无效的ID")
+		return
+	}
+	var plan model.SubscriptionPlan
+	if err := model.DB.First(&plan, id).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	now := common.GetTimestamp()
+	var activeSubscriptionCount int64
+	if err := model.DB.Model(&model.UserSubscription{}).
+		Where("plan_id = ? AND status = ? AND end_time > ?", id, "active", now).
+		Count(&activeSubscriptionCount).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	var pendingGiftCount int64
+	if err := model.DB.Model(&model.DailyGift{}).
+		Where("prize_plan_id = ? AND gift_date = ? AND redeemed = ?", id, time.Now().In(time.Local).Format("2006-01-02"), false).
+		Count(&pendingGiftCount).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if activeSubscriptionCount > 0 || pendingGiftCount > 0 {
+		common.ApiErrorMsg(c, "套餐仍有生效订阅或待领取礼物；请先禁用，待权益结束后再删除")
+		return
+	}
+	if err := model.DB.Delete(&plan).Error; err != nil {
 		common.ApiError(c, err)
 		return
 	}

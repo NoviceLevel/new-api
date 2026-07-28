@@ -2,6 +2,7 @@
   const marker = 'daily-gift-plan-type'
   let createGiftPlan = false
   let giftPlanTitles = null
+  let adminPlans = null
   let giftPlanRequest = null
 
   const decorateCreateDialog = () => {
@@ -51,12 +52,14 @@
       giftPlanRequest = fetch('/api/subscription/admin/plans')
         .then((response) => (response.ok ? response.json() : null))
         .then((payload) => {
+          adminPlans = payload?.data || []
           giftPlanTitles = new Set(
-            (payload?.data || [])
+            adminPlans
               .filter((item) => item?.plan?.is_daily_gift)
               .map((item) => item.plan.title)
           )
           decorateGiftRows()
+          decorateDeleteButtons()
         })
         .catch(() => {
           giftPlanTitles = new Set()
@@ -72,6 +75,37 @@
       badge.className = 'daily-gift-plan-badge'
       badge.textContent = '礼物套餐'
       planCell.append(badge)
+    })
+  }
+
+  const decorateDeleteButtons = () => {
+    if (location.pathname !== '/subscriptions' || adminPlans === null) return
+    document.querySelectorAll('table tr').forEach((row) => {
+      const id = Number(row.querySelector('td:first-child')?.textContent.trim())
+      const plan = adminPlans.find((item) => item?.plan?.id === id)?.plan
+      const actions = row.querySelector('td:last-child')
+      if (!plan || !actions || actions.querySelector('[data-daily-plan-delete]')) return
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.dataset.dailyPlanDelete = String(plan.id)
+      button.className = 'daily-plan-delete'
+      button.textContent = '删除'
+      button.addEventListener('click', async () => {
+        if (!window.confirm(`确认删除套餐“${plan.title}”？`)) return
+        button.disabled = true
+        try {
+          const response = await fetch(`/api/subscription/admin/plans/${plan.id}`, { method: 'DELETE' })
+          if (!response.ok) {
+            const payload = await response.json().catch(() => null)
+            throw new Error(payload?.message || '删除套餐失败')
+          }
+          location.reload()
+        } catch (error) {
+          window.alert(error.message || '删除套餐失败')
+          button.disabled = false
+        }
+      })
+      actions.append(button)
     })
   }
 
@@ -107,12 +141,15 @@
     .daily-gift-plan-type legend { padding: 0 4px; font-size: 13px; font-weight: 600; }
     .daily-gift-plan-type label { display: flex; align-items: center; gap: 6px; font-size: 14px; }
     .daily-gift-plan-badge { display: inline-flex; margin-top: 4px; border: 1px solid #60a5fa; border-radius: 4px; color: #2563eb; padding: 1px 5px; font-size: 11px; font-weight: 600; }
+    .daily-plan-delete { border: 0; background: transparent; color: #dc2626; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
+    .daily-plan-delete:disabled { cursor: default; opacity: .55; }
   `
   document.head.append(style)
 
   const decorate = () => {
     decorateCreateDialog()
     decorateGiftRows()
+    decorateDeleteButtons()
   }
   const observer = new MutationObserver(decorate)
   observer.observe(document.documentElement, { childList: true, subtree: true })
