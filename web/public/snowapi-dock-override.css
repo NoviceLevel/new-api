@@ -11,3 +11,26 @@
 .snowapi-dock-link-active {
   box-shadow: 0 7px 18px rgb(0 0 0 / 18%);
 }
+
+@media (min-width: 768px) {
+  [data-slot='sidebar-wrapper']:has(
+    [data-slot='sidebar'][data-side='left'][data-state='expanded']
+  )
+    .snowapi-dock-outer {
+    left: calc(50% + (var(--sidebar-width) / 2));
+  }
+
+  [data-slot='sidebar-wrapper']:has(
+    [data-slot='sidebar'][data-side='left'][data-state='collapsed'][data-collapsible='icon']
+  )
+    .snowapi-dock-outer {
+    left: calc(50% + ((var(--sidebar-width-icon) + 1rem) / 2));
+  }
+
+  [data-slot='sidebar-wrapper']:has(
+    [data-slot='sidebar'][data-side='right'][data-state='expanded']
+  )
+    .snowapi-dock-outer {
+    left: calc(50% - (var(--sidebar-width) / 2));
+  }
+}
