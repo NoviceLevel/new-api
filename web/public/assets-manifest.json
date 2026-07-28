@@ -1,5 +1,5 @@
 {
-  "reference": "https://api.unsnow.org/",
+  "reference": "https://api.example.com/",
   "assets": [
     {
       "contentType": "image/vnd.microsoft.icon",
@@ -13,12 +13,12 @@
     },
     {
       "contentType": "text/css",
-      "path": "/snowapi-theme/monochrome.css",
-      "size": 7670
+      "path": "/krulu-theme/monochrome.css",
+      "size": 7666
     },
     {
       "contentType": "image/png",
-      "path": "/snowapi-theme/unsnow-favicon.png",
+      "path": "/krulu-theme/krulu-favicon.png",
       "size": 21024
     },
     {
@@ -28,198 +28,198 @@
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/1446.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/1446.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/1879.cc43ed41b8.css",
-      "size": 1916
+      "path": "/static/css/async/1879.144aa28df8.css",
+      "size": 1888
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/2301.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/2301.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/2355.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/2355.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/2867.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/2867.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/3049.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/3049.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/3406.46f36096a6.css",
-      "size": 8165
+      "path": "/static/css/async/3406.235534e4dc.css",
+      "size": 8117
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/3584.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/3584.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/3733.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/3733.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/3837.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/3837.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/4109.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/4109.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/4361.e552730d1a.css",
-      "size": 13482
+      "path": "/static/css/async/4361.df17ecf58e.css",
+      "size": 13180
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/4762.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/4762.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/4904.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/4904.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/4939.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/4939.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/6008.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/6008.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/602.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/602.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/6064.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/6064.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/6163.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/6163.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/6312.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/6312.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/6360.cc43ed41b8.css",
-      "size": 1916
+      "path": "/static/css/async/6360.144aa28df8.css",
+      "size": 1888
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/7240.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/7240.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/7340.cc43ed41b8.css",
-      "size": 1916
+      "path": "/static/css/async/7340.144aa28df8.css",
+      "size": 1888
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/7367.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/7367.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/7788.cc43ed41b8.css",
-      "size": 1916
+      "path": "/static/css/async/7788.144aa28df8.css",
+      "size": 1888
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/7801.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/7801.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/8446.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/8446.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/8891.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/8891.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/8914.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/8914.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/8995.cc43ed41b8.css",
-      "size": 1916
+      "path": "/static/css/async/8995.144aa28df8.css",
+      "size": 1888
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9010.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/9010.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9176.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/9176.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9193.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/9193.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9502.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/9502.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9700.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/9700.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/983.cc43ed41b8.css",
-      "size": 1916
+      "path": "/static/css/async/983.144aa28df8.css",
+      "size": 1888
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9940.db300a1340.css",
-      "size": 3645
+      "path": "/static/css/async/9940.9303ff0b44.css",
+      "size": 3597
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/async/9953.d5d162212c.css",
-      "size": 2556
+      "path": "/static/css/async/9953.4173cf13c5.css",
+      "size": 2528
     },
     {
       "contentType": "text/css; charset=utf-8",
-      "path": "/static/css/index.ab963ea73a.css",
-      "size": 409508
+      "path": "/static/css/index.7688aca569.css",
+      "size": 409500
     },
     {
       "contentType": "font/woff",
@@ -598,8 +598,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/1879.6c60bc1ba1.js",
-      "size": 12153
+      "path": "/static/js/async/1879.7ec6f87e92.js",
+      "size": 12147
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -668,18 +668,18 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/3291.66efbdea0c.js",
-      "size": 98444
+      "path": "/static/js/async/3291.c9b69f2477.js",
+      "size": 98865
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/3406.2dd973aa37.js",
-      "size": 7191
+      "path": "/static/js/async/3406.b12d9b85c1.js",
+      "size": 7187
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/3419.a58f8f7583.js",
-      "size": 691423
+      "path": "/static/js/async/3419.5fc797459b.js",
+      "size": 691422
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -733,8 +733,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/4361.b9a8b7a8a5.js",
-      "size": 10223
+      "path": "/static/js/async/4361.dc1a1666bd.js",
+      "size": 10231
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -813,8 +813,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/6360.f8b02a3b25.js",
-      "size": 4646
+      "path": "/static/js/async/6360.1a4a446d04.js",
+      "size": 4640
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -868,8 +868,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/7340.29772a2ae3.js",
-      "size": 4651
+      "path": "/static/js/async/7340.f1c45dff82.js",
+      "size": 4645
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -888,8 +888,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/7788.f2b9f4653f.js",
-      "size": 7695
+      "path": "/static/js/async/7788.c2b560ffad.js",
+      "size": 7689
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -953,8 +953,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/8995.abb8294330.js",
-      "size": 19132
+      "path": "/static/js/async/8995.c5e12061b7.js",
+      "size": 19126
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -1013,8 +1013,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/983.3d8d46e75a.js",
-      "size": 7640
+      "path": "/static/js/async/983.ec8c71dfb8.js",
+      "size": 7634
     },
     {
       "contentType": "text/javascript; charset=utf-8",
@@ -1043,13 +1043,13 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/9953.17b10d6be5.js",
-      "size": 33401
+      "path": "/static/js/async/9953.1fcbf0355f.js",
+      "size": 33388
     },
     {
       "contentType": "text/javascript; charset=utf-8",
       "path": "/static/js/index.06144a8180.js",
-      "size": 3407424
+      "size": 3407352
     },
     {
       "contentType": "text/javascript; charset=utf-8",

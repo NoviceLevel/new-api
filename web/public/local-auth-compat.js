@@ -1,5 +1,5 @@
 (() => {
-  const tokenKey = 'snowapi.local.access-token'
+  const tokenKey = 'krulu.local.access-token'
   const nativeFetch = window.fetch.bind(window)
   const nativeOpen = XMLHttpRequest.prototype.open
   const nativeSend = XMLHttpRequest.prototype.send
