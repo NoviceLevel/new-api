@@ -13,13 +13,23 @@
     },
     {
       "contentType": "text/css",
-      "path": "/krulu-theme/monochrome.css",
-      "size": 7666
+      "path": "/krulu-dock-shell.css",
+      "size": 3175
+    },
+    {
+      "contentType": "text/javascript; charset=utf-8",
+      "path": "/krulu-dock-shell.js",
+      "size": 4739
     },
     {
       "contentType": "image/png",
       "path": "/krulu-theme/krulu-favicon.png",
       "size": 21024
+    },
+    {
+      "contentType": "text/css",
+      "path": "/krulu-theme/monochrome.css",
+      "size": 7666
     },
     {
       "contentType": "text/css; charset=utf-8",
@@ -668,8 +678,8 @@
     },
     {
       "contentType": "text/javascript; charset=utf-8",
-      "path": "/static/js/async/3291.1ac71fcebe.js",
-      "size": 99322
+      "path": "/static/js/async/3291.c72c04019d.js",
+      "size": 100180
     },
     {
       "contentType": "text/javascript; charset=utf-8",
