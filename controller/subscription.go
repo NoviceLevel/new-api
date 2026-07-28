@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
@@ -421,13 +420,13 @@ func AdminDeleteSubscriptionPlan(c *gin.Context) {
 	}
 	var pendingGiftCount int64
 	if err := model.DB.Model(&model.DailyGift{}).
-		Where("prize_plan_id = ? AND gift_date = ? AND redeemed = ?", id, time.Now().In(time.Local).Format("2006-01-02"), false).
+		Where("prize_plan_id = ? AND redeemed = ?", id, false).
 		Count(&pendingGiftCount).Error; err != nil {
 		common.ApiError(c, err)
 		return
 	}
 	if activeSubscriptionCount > 0 || pendingGiftCount > 0 {
-		common.ApiErrorMsg(c, "套餐仍有生效订阅或待领取礼物；请先禁用，待权益结束后再删除")
+		common.ApiErrorMsg(c, fmt.Sprintf("套餐仍有 %d 个生效订阅和 %d 个待领取礼物；请先禁用，待权益结束后再删除", activeSubscriptionCount, pendingGiftCount))
 		return
 	}
 	if err := model.DB.Delete(&plan).Error; err != nil {

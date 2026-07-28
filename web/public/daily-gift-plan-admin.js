@@ -95,10 +95,8 @@
         showDeleteDialog(plan, async () => {
           button.disabled = true
           const response = await fetch(`/api/subscription/admin/plans/${plan.id}`, { method: 'DELETE' })
-          if (!response.ok) {
-            const payload = await response.json().catch(() => null)
-            throw new Error(payload?.message || '删除套餐失败')
-          }
+          const payload = await response.json().catch(() => null)
+          if (!response.ok || payload?.success === false) throw new Error(payload?.message || '删除套餐失败')
           location.reload()
         }, () => {
           button.disabled = false
