@@ -4,6 +4,7 @@
 }
 
 .snowapi-dock-panel {
+  align-items: center !important;
   padding: 0.38rem;
 }
 
