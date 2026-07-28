@@ -262,6 +262,9 @@ func upsertDailyGiftPlan(rewardPlan *model.SubscriptionPlan) error {
 		if existingPlan == nil {
 			return tx.Create(rewardPlan).Error
 		}
+		if existingPlan.DeletionScheduledAt > 0 {
+			return errors.New("daily gift plan is waiting for automatic deletion")
+		}
 		rewardPlan.Id = existingPlan.Id
 		return tx.Model(&model.SubscriptionPlan{}).Where("id = ?", existingPlan.Id).Updates(map[string]interface{}{
 			"title":                      rewardPlan.Title,

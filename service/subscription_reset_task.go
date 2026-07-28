@@ -53,6 +53,7 @@ func runSubscriptionQuotaResetOnce() {
 	ctx := context.Background()
 	totalReset := 0
 	totalExpired := 0
+	totalDeletedPlans := 0
 	for {
 		n, err := model.ExpireDueSubscriptions(subscriptionResetBatchSize)
 		if err != nil {
@@ -63,6 +64,20 @@ func runSubscriptionQuotaResetOnce() {
 			break
 		}
 		totalExpired += n
+		if n < subscriptionResetBatchSize {
+			break
+		}
+	}
+	for {
+		n, err := model.DeleteDueSubscriptionPlans(subscriptionResetBatchSize)
+		if err != nil {
+			logger.LogWarn(ctx, fmt.Sprintf("subscription plan deletion task failed: %v", err))
+			return
+		}
+		if n == 0 {
+			break
+		}
+		totalDeletedPlans += n
 		if n < subscriptionResetBatchSize {
 			break
 		}
@@ -87,7 +102,7 @@ func runSubscriptionQuotaResetOnce() {
 			subscriptionCleanupLast.Store(time.Now().Unix())
 		}
 	}
-	if common.DebugEnabled && (totalReset > 0 || totalExpired > 0) {
-		logger.LogDebug(ctx, "subscription maintenance: reset_count=%d, expired_count=%d", totalReset, totalExpired)
+	if common.DebugEnabled && (totalReset > 0 || totalExpired > 0 || totalDeletedPlans > 0) {
+		logger.LogDebug(ctx, "subscription maintenance: reset_count=%d, expired_count=%d, deleted_plan_count=%d", totalReset, totalExpired, totalDeletedPlans)
 	}
 }

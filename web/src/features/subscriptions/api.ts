@@ -22,6 +22,7 @@ import type {
   ApiResponse,
   PlanRecord,
   PlanPayload,
+	PlanDeletionResult,
   UserSubscriptionRecord,
   CreateUserSubscriptionRequest,
   ResetUserSubscriptionsRequest,
@@ -66,8 +67,17 @@ export async function patchPlanStatus(
   return res.data
 }
 
-export async function deletePlan(id: number): Promise<ApiResponse> {
+export async function deletePlan(
+  id: number
+): Promise<ApiResponse<PlanDeletionResult>> {
   const res = await api.delete(`/api/subscription/admin/plans/${id}`)
+  return res.data
+}
+
+export async function cancelPlanDeletion(id: number): Promise<ApiResponse> {
+  const res = await api.post(
+    `/api/subscription/admin/plans/${id}/cancel-deletion`
+  )
   return res.data
 }
 

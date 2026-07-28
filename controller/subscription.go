@@ -16,7 +16,10 @@ import (
 // ---- Shared types ----
 
 type SubscriptionPlanDTO struct {
-	Plan model.SubscriptionPlan `json:"plan"`
+	Plan                    model.SubscriptionPlan `json:"plan"`
+	ActiveSubscriptionCount int64                  `json:"active_subscription_count,omitempty"`
+	PendingGiftCount        int64                  `json:"pending_gift_count,omitempty"`
+	DeletionEligibleAt      int64                  `json:"deletion_eligible_at,omitempty"`
 }
 
 type BillingPreferenceRequest struct {
@@ -125,11 +128,21 @@ func AdminListSubscriptionPlans(c *gin.Context) {
 		return
 	}
 	result := make([]SubscriptionPlanDTO, 0, len(plans))
+	now := common.GetTimestamp()
 	for _, p := range plans {
 		p.NormalizeDefaults()
-		result = append(result, SubscriptionPlanDTO{
-			Plan: p,
-		})
+		item := SubscriptionPlanDTO{Plan: p}
+		if p.DeletionScheduledAt > 0 {
+			status, err := model.GetSubscriptionPlanDeletionStatus(p.Id, now)
+			if err != nil {
+				common.ApiError(c, err)
+				return
+			}
+			item.ActiveSubscriptionCount = status.ActiveSubscriptionCount
+			item.PendingGiftCount = status.PendingGiftCount
+			item.DeletionEligibleAt = status.DeletionEligibleAt
+		}
+		result = append(result, item)
 	}
 	common.ApiSuccess(c, result)
 }
@@ -243,8 +256,12 @@ func AdminUpdateSubscriptionPlan(c *gin.Context) {
 		return
 	}
 	var existingPlan model.SubscriptionPlan
-	if err := model.DB.Select("is_daily_gift").First(&existingPlan, id).Error; err != nil {
+	if err := model.DB.Select("is_daily_gift", "deletion_scheduled_at").First(&existingPlan, id).Error; err != nil {
 		common.ApiError(c, err)
+		return
+	}
+	if existingPlan.DeletionScheduledAt > 0 {
+		common.ApiErrorMsg(c, "套餐正在等待权益到期后自动删除；请先取消删除")
 		return
 	}
 	if existingPlan.IsDailyGift {
@@ -374,8 +391,12 @@ func AdminUpdateSubscriptionPlanStatus(c *gin.Context) {
 		return
 	}
 	var existingPlan model.SubscriptionPlan
-	if err := model.DB.Select("is_daily_gift").First(&existingPlan, id).Error; err != nil {
+	if err := model.DB.Select("is_daily_gift", "deletion_scheduled_at").First(&existingPlan, id).Error; err != nil {
 		common.ApiError(c, err)
+		return
+	}
+	if existingPlan.DeletionScheduledAt > 0 {
+		common.ApiErrorMsg(c, "套餐正在等待权益到期后自动删除；请先取消删除")
 		return
 	}
 	if existingPlan.IsDailyGift {
@@ -410,26 +431,80 @@ func AdminDeleteSubscriptionPlan(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	if plan.DeletionScheduledAt > 0 {
+		status, err := model.GetSubscriptionPlanDeletionStatus(id, common.GetTimestamp())
+		if err != nil {
+			common.ApiError(c, err)
+			return
+		}
+		common.ApiSuccess(c, gin.H{
+			"scheduled":                 true,
+			"deletion_scheduled_at":     plan.DeletionScheduledAt,
+			"deletion_eligible_at":      status.DeletionEligibleAt,
+			"active_subscription_count": status.ActiveSubscriptionCount,
+			"pending_gift_count":        status.PendingGiftCount,
+		})
+		return
+	}
 	now := common.GetTimestamp()
-	var activeSubscriptionCount int64
-	if err := model.DB.Model(&model.UserSubscription{}).
-		Where("plan_id = ? AND status = ? AND end_time > ?", id, "active", now).
-		Count(&activeSubscriptionCount).Error; err != nil {
+	status, err := model.GetSubscriptionPlanDeletionStatus(id, now)
+	if err != nil {
 		common.ApiError(c, err)
 		return
 	}
-	var pendingGiftCount int64
-	if err := model.DB.Model(&model.DailyGift{}).
-		Where("prize_plan_id = ? AND redeemed = ?", id, false).
-		Count(&pendingGiftCount).Error; err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	if activeSubscriptionCount > 0 || pendingGiftCount > 0 {
-		common.ApiErrorMsg(c, fmt.Sprintf("套餐仍有 %d 个生效订阅和 %d 个待领取礼物；请先禁用，待权益结束后再删除", activeSubscriptionCount, pendingGiftCount))
+	if status.ActiveSubscriptionCount > 0 || status.PendingGiftCount > 0 {
+		if err := model.DB.Model(&model.SubscriptionPlan{}).Where("id = ?", id).Updates(map[string]interface{}{
+			"enabled_before_deletion": plan.Enabled,
+			"enabled":                 false,
+			"deletion_scheduled_at":   now,
+			"updated_at":              now,
+		}).Error; err != nil {
+			common.ApiError(c, err)
+			return
+		}
+		model.InvalidateSubscriptionPlanCache(id)
+		common.ApiSuccess(c, gin.H{
+			"scheduled":                 true,
+			"deletion_scheduled_at":     now,
+			"deletion_eligible_at":      status.DeletionEligibleAt,
+			"active_subscription_count": status.ActiveSubscriptionCount,
+			"pending_gift_count":        status.PendingGiftCount,
+		})
 		return
 	}
 	if err := model.DB.Delete(&plan).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	model.InvalidateSubscriptionPlanCache(id)
+	common.ApiSuccess(c, nil)
+}
+
+func AdminCancelSubscriptionPlanDeletion(c *gin.Context) {
+	if !requirePaymentCompliance(c) {
+		return
+	}
+
+	id, _ := strconv.Atoi(c.Param("id"))
+	if id <= 0 {
+		common.ApiErrorMsg(c, "无效的 ID")
+		return
+	}
+	var plan model.SubscriptionPlan
+	if err := model.DB.First(&plan, id).Error; err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if plan.DeletionScheduledAt == 0 {
+		common.ApiErrorMsg(c, "套餐未处于待删除状态")
+		return
+	}
+	if err := model.DB.Model(&model.SubscriptionPlan{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"enabled":                 plan.EnabledBeforeDeletion,
+		"enabled_before_deletion": false,
+		"deletion_scheduled_at":   0,
+		"updated_at":              common.GetTimestamp(),
+	}).Error; err != nil {
 		common.ApiError(c, err)
 		return
 	}

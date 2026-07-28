@@ -17,8 +17,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import type { Row } from '@tanstack/react-table'
-import { Pencil, Power, PowerOff, RotateCcw, Trash2 } from 'lucide-react'
+import { Pencil, Power, PowerOff, RotateCcw, Trash2, Undo2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -28,6 +29,7 @@ import {
 } from '@/components/ui/tooltip'
 
 import type { PlanRecord } from '../types'
+import { cancelPlanDeletion } from '../api'
 import { useSubscriptions } from './subscriptions-provider'
 
 interface DataTableRowActionsProps {
@@ -36,8 +38,10 @@ interface DataTableRowActionsProps {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { t } = useTranslation()
-  const { setOpen, setCurrentRow, complianceConfirmed } = useSubscriptions()
+  const { setOpen, setCurrentRow, complianceConfirmed, triggerRefresh } =
+    useSubscriptions()
   const isEnabled = row.original.plan.enabled
+  const deletionScheduled = row.original.plan.deletion_scheduled_at > 0
   const toggleLabel = isEnabled ? t('Disable') : t('Enable')
 
   const handleEdit = () => {
@@ -58,6 +62,41 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const handleDelete = () => {
     setCurrentRow(row.original)
     setOpen('delete')
+  }
+
+  const handleCancelDeletion = async () => {
+    try {
+      const result = await cancelPlanDeletion(row.original.plan.id)
+      if (!result.success) {
+        throw new Error(result.message || t('Operation failed'))
+      }
+      toast.success('已取消自动删除')
+      triggerRefresh()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('Operation failed'))
+    }
+  }
+
+  if (deletionScheduled) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant='ghost'
+              size='icon-sm'
+              disabled={!complianceConfirmed}
+              onClick={handleCancelDeletion}
+              aria-label='取消自动删除'
+              className='text-warning hover:text-warning'
+            />
+          }
+        >
+          <Undo2 />
+        </TooltipTrigger>
+        <TooltipContent>取消自动删除</TooltipContent>
+      </Tooltip>
+    )
   }
 
   return (

@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { type ColumnDef } from '@tanstack/react-table'
-import { useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { BadgeCell } from '@/components/data-table'
@@ -29,6 +29,23 @@ import { formatQuota } from '@/lib/format'
 import { formatDuration, formatResetPeriod } from '../lib'
 import type { PlanRecord } from '../types'
 import { DataTableRowActions } from './data-table-row-actions'
+
+function DeletionCountdown({ eligibleAt }: { eligibleAt?: number }) {
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  if (!eligibleAt) return <span>等待权益结算</span>
+  const seconds = Math.max(0, eligibleAt - Math.floor(now / 1000))
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const remaining = days > 0 ? `${days}天 ${hours}小时` : `${hours}小时 ${minutes}分`
+  return <span>删除倒计时：{remaining}</span>
+}
 
 export function useSubscriptionsColumns(): ColumnDef<PlanRecord>[] {
   const { t } = useTranslation()
@@ -113,7 +130,21 @@ export function useSubscriptionsColumns(): ColumnDef<PlanRecord>[] {
         header: t('Status'),
         meta: { mobileBadge: true },
         cell: ({ row }) =>
-          row.original.plan.enabled ? (
+          row.original.plan.deletion_scheduled_at > 0 ? (
+            <div className='space-y-1'>
+              <StatusBadge
+                label='待删除'
+                variant='warning'
+                copyable={false}
+                className='-ml-1.5'
+              />
+              <div className='text-muted-foreground text-xs'>
+                <DeletionCountdown
+                  eligibleAt={row.original.deletion_eligible_at}
+                />
+              </div>
+            </div>
+          ) : row.original.plan.enabled ? (
             <StatusBadge
               label={t('Enable')}
               variant='success'

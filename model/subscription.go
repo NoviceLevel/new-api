@@ -160,6 +160,12 @@ type SubscriptionPlan struct {
 	Enabled   bool `json:"enabled" gorm:"default:true"`
 	SortOrder int  `json:"sort_order" gorm:"type:int;default:0"`
 
+	// DeletionScheduledAt marks a plan for automatic removal after all granted
+	// rights have expired. EnabledBeforeDeletion lets an administrator cancel
+	// the deletion and restore the state the plan had before scheduling.
+	DeletionScheduledAt   int64 `json:"deletion_scheduled_at" gorm:"bigint;default:0;index"`
+	EnabledBeforeDeletion bool  `json:"-" gorm:"default:false"`
+
 	// IsDailyGift keeps the reward plan out of ordinary storefront and admin
 	// plan lists. Its Enabled flag controls whether new daily gifts can be
 	// claimed.
@@ -426,6 +432,100 @@ func CountUserSubscriptionsByPlan(userId int, planId int) (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+type SubscriptionPlanDeletionStatus struct {
+	ActiveSubscriptionCount int64 `json:"active_subscription_count"`
+	PendingGiftCount        int64 `json:"pending_gift_count"`
+	DeletionEligibleAt      int64 `json:"deletion_eligible_at"`
+}
+
+// GetSubscriptionPlanDeletionStatus returns the remaining rights that keep a
+// deletion-scheduled plan alive. A daily gift is redeemable only on its date,
+// so an unredeemed record protects the plan until the next local midnight.
+func GetSubscriptionPlanDeletionStatus(planID int, now int64) (*SubscriptionPlanDeletionStatus, error) {
+	return getSubscriptionPlanDeletionStatus(DB, planID, now)
+}
+
+func getSubscriptionPlanDeletionStatus(db *gorm.DB, planID int, now int64) (*SubscriptionPlanDeletionStatus, error) {
+	if planID <= 0 {
+		return nil, errors.New("invalid plan id")
+	}
+	status := &SubscriptionPlanDeletionStatus{}
+	if err := db.Model(&UserSubscription{}).
+		Where("plan_id = ? AND status = ? AND end_time > ?", planID, "active", now).
+		Count(&status.ActiveSubscriptionCount).Error; err != nil {
+		return nil, err
+	}
+	if err := db.Model(&UserSubscription{}).
+		Select("COALESCE(MAX(end_time), 0)").
+		Where("plan_id = ? AND status = ? AND end_time > ?", planID, "active", now).
+		Scan(&status.DeletionEligibleAt).Error; err != nil {
+		return nil, err
+	}
+	localNow := time.Unix(now, 0).In(time.Local)
+	currentGiftDate := localNow.Format("2006-01-02")
+	if err := db.Model(&DailyGift{}).
+		Where("prize_plan_id = ? AND gift_date = ? AND redeemed = ?", planID, currentGiftDate, false).
+		Count(&status.PendingGiftCount).Error; err != nil {
+		return nil, err
+	}
+	if status.PendingGiftCount > 0 {
+		nextMidnight := time.Date(localNow.Year(), localNow.Month(), localNow.Day()+1, 0, 0, 0, 0, time.Local).Unix()
+		if nextMidnight > status.DeletionEligibleAt {
+			status.DeletionEligibleAt = nextMidnight
+		}
+	}
+	return status, nil
+}
+
+// DeleteDueSubscriptionPlans permanently removes plans that were scheduled
+// for deletion and no longer have any active subscription or redeemable gift.
+func DeleteDueSubscriptionPlans(limit int) (int, error) {
+	if limit <= 0 {
+		limit = 200
+	}
+	var candidates []SubscriptionPlan
+	if err := DB.Where("deletion_scheduled_at > ?", 0).
+		Order("deletion_scheduled_at asc, id asc").
+		Limit(limit).
+		Find(&candidates).Error; err != nil {
+		return 0, err
+	}
+	deletedCount := 0
+	for _, candidate := range candidates {
+		deleted := false
+		err := DB.Transaction(func(tx *gorm.DB) error {
+			var plan SubscriptionPlan
+			if err := lockForUpdate(tx).First(&plan, candidate.Id).Error; err != nil {
+				return err
+			}
+			if plan.DeletionScheduledAt == 0 {
+				return nil
+			}
+			now := GetDBTimestamp()
+			status, err := getSubscriptionPlanDeletionStatus(tx, plan.Id, now)
+			if err != nil {
+				return err
+			}
+			if status.ActiveSubscriptionCount > 0 || status.PendingGiftCount > 0 {
+				return nil
+			}
+			if err := tx.Delete(&plan).Error; err != nil {
+				return err
+			}
+			deleted = true
+			return nil
+		})
+		if err != nil {
+			return deletedCount, err
+		}
+		if deleted {
+			InvalidateSubscriptionPlanCache(candidate.Id)
+			deletedCount++
+		}
+	}
+	return deletedCount, nil
 }
 
 func getUserGroupByIdTx(tx *gorm.DB, userId int) (string, error) {

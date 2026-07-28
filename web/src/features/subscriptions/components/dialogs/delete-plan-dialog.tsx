@@ -37,7 +37,11 @@ export function DeletePlanDialog() {
     try {
       const res = await deletePlan(currentRow.plan.id)
       if (res.success) {
-        toast.success(t('Plan deleted successfully'))
+        toast.success(
+          res.data?.scheduled
+            ? '已进入自动删除倒计时，可在权益到期前取消'
+            : t('Plan deleted successfully')
+        )
         triggerRefresh()
         setOpen(null)
         return
@@ -56,7 +60,7 @@ export function DeletePlanDialog() {
       onOpenChange={(v) => !v && setOpen(null)}
       title={t('Confirm delete')}
       desc={t(
-        'This action cannot be undone. The plan will be permanently deleted. Continue?'
+        'New purchases will stop immediately. The plan is automatically deleted after all current rights expire, and can be cancelled before then. Continue?'
       )}
       handleConfirm={handleConfirm}
       isLoading={loading}

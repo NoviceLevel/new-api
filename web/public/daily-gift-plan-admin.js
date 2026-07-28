@@ -6,6 +6,16 @@
   let adminPlans = null
   let giftPlanRequest = null
 
+  const deletionCountdown = (eligibleAt) => {
+    const seconds = Math.max(0, Number(eligibleAt || 0) - Math.floor(Date.now() / 1000))
+    if (!eligibleAt) return '\u7b49\u5f85\u5269\u4f59\u6743\u76ca\u7ed3\u7b97'
+    const days = Math.floor(seconds / 86400)
+    const hours = Math.floor((seconds % 86400) / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const remaining = days > 0 ? `${days}\u5929 ${hours}\u5c0f\u65f6` : `${hours}\u5c0f\u65f6 ${minutes}\u5206`
+    return `\u5220\u9664\u5012\u8ba1\u65f6\uff1a${remaining}`
+  }
+
   const decorateCreateDialog = () => {
     if (location.pathname !== '/subscriptions') return
     document.querySelectorAll('[role="dialog"] form').forEach((form) => {
@@ -90,8 +100,18 @@
       button.type = 'button'
       button.dataset.dailyPlanDelete = String(plan.id)
       button.className = 'daily-plan-delete'
-      button.textContent = '删除'
+      button.textContent = plan.deletion_scheduled_at ? '\u53d6\u6d88\u81ea\u52a8\u5220\u9664' : '\u5220\u9664'
       button.addEventListener('click', () => {
+        if (plan.deletion_scheduled_at) {
+          fetch(`/api/subscription/admin/plans/${plan.id}/cancel-deletion`, { method: 'POST' })
+            .then((response) => response.json().catch(() => null).then((payload) => ({ response, payload })))
+            .then(({ response, payload }) => {
+              if (!response.ok || payload?.success === false) throw new Error(payload?.message || '\u53d6\u6d88\u81ea\u52a8\u5220\u9664\u5931\u8d25')
+              location.reload()
+            })
+            .catch((reason) => showPlanActionError(reason.message || '\u53d6\u6d88\u81ea\u52a8\u5220\u9664\u5931\u8d25'))
+          return
+        }
         showDeleteDialog(plan, async () => {
           button.disabled = true
           const response = await fetch(`/api/subscription/admin/plans/${plan.id}`, { method: 'DELETE' })
@@ -106,7 +126,47 @@
     })
   }
 
+  const decorateDeletionCountdowns = () => {
+    if (location.pathname !== '/subscriptions' || adminPlans === null) return
+    document.querySelectorAll('table tr').forEach((row) => {
+      const id = Number(row.querySelector('td:first-child')?.textContent.trim())
+      const record = adminPlans.find((item) => item?.plan?.id === id)
+      const planCell = row.querySelector('td:nth-child(2)')
+      if (!record?.plan || !planCell) return
+      const existing = planCell.querySelector('[data-plan-deletion-countdown]')
+      if (!record.plan.deletion_scheduled_at) {
+        existing?.remove()
+        return
+      }
+      const countdown = existing || document.createElement('div')
+      countdown.dataset.planDeletionCountdown = String(record.plan.id)
+      countdown.className = 'subscription-plan-deletion-countdown'
+      const text = deletionCountdown(record.deletion_eligible_at)
+      if (countdown.textContent !== text) countdown.textContent = text
+      if (!existing) planCell.append(countdown)
+    })
+  }
+
   const closeDeleteDialog = () => document.getElementById(deleteDialogId)?.remove()
+
+  const showPlanActionError = (message) => {
+    closeDeleteDialog()
+    const root = document.createElement('div')
+    root.id = deleteDialogId
+    root.innerHTML = `
+      <div class="subscription-plan-delete-backdrop" data-delete-dialog-close></div>
+      <section class="subscription-plan-delete-modal" role="dialog" aria-modal="true" aria-labelledby="subscription-plan-delete-title">
+        <h2 id="subscription-plan-delete-title">\u64cd\u4f5c\u5931\u8d25</h2>
+        <p class="subscription-plan-delete-error" role="alert"></p>
+        <footer><button type="button" class="subscription-plan-delete-cancel" data-delete-dialog-close>\u5173\u95ed</button></footer>
+      </section>
+    `
+    document.body.append(root)
+    root.querySelector('.subscription-plan-delete-error').textContent = message
+    root.querySelectorAll('[data-delete-dialog-close]').forEach((element) => {
+      element.addEventListener('click', closeDeleteDialog)
+    })
+  }
 
   const showDeleteDialog = (plan, onConfirm, onClose) => {
     closeDeleteDialog()
@@ -125,6 +185,9 @@
       </section>
     `
     document.body.append(root)
+    root.querySelector('#subscription-plan-delete-title').textContent = '\u5b89\u6392\u5220\u9664'
+    root.querySelector('.subscription-plan-delete-modal p').textContent = `\u786e\u8ba4\u5220\u9664“${plan.title}”\uff1f\u7acb\u5373\u505c\u6b62\u65b0\u8d2d\u4e70\u548c\u65b0\u9886\u53d6\uff0c\u5f53\u5df2\u53d1\u653e\u6743\u76ca\u5230\u671f\u540e\u81ea\u52a8\u5220\u9664\u3002\u5012\u8ba1\u65f6\u671f\u95f4\u53ef\u53d6\u6d88\u3002`
+    root.querySelector('.subscription-plan-delete-confirm').textContent = '\u5b89\u6392\u5220\u9664'
     const close = () => {
       closeDeleteDialog()
       onClose()
@@ -180,6 +243,7 @@
     .daily-gift-plan-badge { display: inline-flex; margin-top: 4px; border: 1px solid #60a5fa; border-radius: 4px; color: #2563eb; padding: 1px 5px; font-size: 11px; font-weight: 600; }
     .daily-plan-delete { border: 0; background: transparent; color: #dc2626; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
     .daily-plan-delete:disabled { cursor: default; opacity: .55; }
+    .subscription-plan-deletion-countdown { margin-top: 4px; color: #a16207; font-size: 11px; font-weight: 600; }
     #${deleteDialogId} { position: fixed; z-index: 1000; inset: 0; }
     .subscription-plan-delete-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, .42); }
     .subscription-plan-delete-modal { position: relative; box-sizing: border-box; width: min(420px, calc(100vw - 32px)); margin: 20vh auto 0; padding: 22px; border: 1px solid var(--border, #d5d5d5); border-radius: 8px; background: var(--background, #fff); color: var(--foreground, #171717); box-shadow: 0 20px 50px rgba(0, 0, 0, .24); }
@@ -197,8 +261,18 @@
     decorateCreateDialog()
     decorateGiftRows()
     decorateDeleteButtons()
+    decorateDeletionCountdowns()
   }
   const observer = new MutationObserver(decorate)
   observer.observe(document.documentElement, { childList: true, subtree: true })
+  window.setInterval(() => {
+    if (location.pathname !== '/subscriptions' || adminPlans === null) return
+    document.querySelectorAll('[data-plan-deletion-countdown]').forEach((element) => {
+      const planId = Number(element.dataset.planDeletionCountdown)
+      const record = adminPlans.find((item) => item?.plan?.id === planId)
+      const text = deletionCountdown(record?.deletion_eligible_at)
+      if (element.textContent !== text) element.textContent = text
+    })
+  }, 1000)
   decorate()
 })()
