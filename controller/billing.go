@@ -17,26 +17,46 @@ func GetSubscription(c *gin.Context) {
 	if common.DisplayTokenStatEnabled {
 		tokenId := c.GetInt("token_id")
 		token, err = model.GetTokenById(tokenId)
+		if err != nil {
+			openAIError := types.OpenAIError{
+				Message: err.Error(),
+				Type:    "upstream_error",
+			}
+			c.JSON(200, gin.H{
+				"error": openAIError,
+			})
+			return
+		}
 		expiredTime = token.ExpiredTime
 		remainQuota = token.RemainQuota
 		usedQuota = token.UsedQuota
 	} else {
 		userId := c.GetInt("id")
 		remainQuota, err = model.GetUserQuota(userId, false)
+		if err != nil {
+			openAIError := types.OpenAIError{
+				Message: err.Error(),
+				Type:    "upstream_error",
+			}
+			c.JSON(200, gin.H{
+				"error": openAIError,
+			})
+			return
+		}
 		usedQuota, err = model.GetUserUsedQuota(userId)
+		if err != nil {
+			openAIError := types.OpenAIError{
+				Message: err.Error(),
+				Type:    "upstream_error",
+			}
+			c.JSON(200, gin.H{
+				"error": openAIError,
+			})
+			return
+		}
 	}
 	if expiredTime <= 0 {
 		expiredTime = 0
-	}
-	if err != nil {
-		openAIError := types.OpenAIError{
-			Message: err.Error(),
-			Type:    "upstream_error",
-		}
-		c.JSON(200, gin.H{
-			"error": openAIError,
-		})
-		return
 	}
 	quota := remainQuota + usedQuota
 	amount := float64(quota)
@@ -75,20 +95,30 @@ func GetUsage(c *gin.Context) {
 	if common.DisplayTokenStatEnabled {
 		tokenId := c.GetInt("token_id")
 		token, err = model.GetTokenById(tokenId)
+		if err != nil {
+			openAIError := types.OpenAIError{
+				Message: err.Error(),
+				Type:    "new_api_error",
+			}
+			c.JSON(200, gin.H{
+				"error": openAIError,
+			})
+			return
+		}
 		quota = token.UsedQuota
 	} else {
 		userId := c.GetInt("id")
 		quota, err = model.GetUserUsedQuota(userId)
-	}
-	if err != nil {
-		openAIError := types.OpenAIError{
-			Message: err.Error(),
-			Type:    "new_api_error",
+		if err != nil {
+			openAIError := types.OpenAIError{
+				Message: err.Error(),
+				Type:    "new_api_error",
+			}
+			c.JSON(200, gin.H{
+				"error": openAIError,
+			})
+			return
 		}
-		c.JSON(200, gin.H{
-			"error": openAIError,
-		})
-		return
 	}
 	amount := float64(quota)
 	switch operation_setting.GetQuotaDisplayType() {

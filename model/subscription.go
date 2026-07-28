@@ -138,8 +138,10 @@ func InvalidateSubscriptionPlanCache(planId int) {
 	}
 	cache := getSubscriptionPlanCache()
 	_, _ = cache.DeleteMany([]string{subscriptionPlanCacheKey(planId)})
-	infoCache := getSubscriptionPlanInfoCache()
-	_ = infoCache.Purge()
+	// infoCache entries are keyed by userSubscriptionId ("sub:{id}") and carry
+	// a short TTL. They expire naturally, and once this plan's own cache entry
+	// is deleted above, stale info entries will be refreshed from the updated
+	// plan on next access after expiry.
 }
 
 // Subscription plan
@@ -481,6 +483,8 @@ func getSubscriptionPlanDeletionStatus(db *gorm.DB, planID int, now int64) (*Sub
 
 // DeleteDueSubscriptionPlans permanently removes plans that were scheduled
 // for deletion and no longer have any active subscription or redeemable gift.
+// Before deleting, it restores user groups for users who received group upgrades
+// from this plan's subscriptions.
 func DeleteDueSubscriptionPlans(limit int) (int, error) {
 	if limit <= 0 {
 		limit = 200
@@ -511,6 +515,9 @@ func DeleteDueSubscriptionPlans(limit int) (int, error) {
 			if status.ActiveSubscriptionCount > 0 || status.PendingGiftCount > 0 {
 				return nil
 			}
+			if err := restoreUserGroupsForDeletedPlanTx(tx, plan.Id, now); err != nil {
+				return err
+			}
 			if err := tx.Delete(&plan).Error; err != nil {
 				return err
 			}
@@ -526,6 +533,93 @@ func DeleteDueSubscriptionPlans(limit int) (int, error) {
 		}
 	}
 	return deletedCount, nil
+}
+
+// restoreUserGroupsForDeletedPlanTx restores user groups for users who received
+// group upgrades from a plan that is about to be deleted. For each affected user,
+// if they no longer have other active subscriptions with upgrade groups, their
+// group is reverted to the appropriate target (explicit downgrade_group or the
+// group held before purchase).
+func restoreUserGroupsForDeletedPlanTx(tx *gorm.DB, planId int, now int64) error {
+	var subs []UserSubscription
+	if err := tx.Where("plan_id = ? AND upgrade_group <> ?", planId, "").
+		Find(&subs).Error; err != nil {
+		return err
+	}
+	if len(subs) == 0 {
+		return nil
+	}
+	// Group subscriptions by user to avoid processing the same user multiple times
+	userSubs := make(map[int][]UserSubscription)
+	for _, sub := range subs {
+		if sub.UserId > 0 {
+			userSubs[sub.UserId] = append(userSubs[sub.UserId], sub)
+		}
+	}
+	for userId, userSubList := range userSubs {
+		// Check if user still has other active subscriptions with upgrade groups
+		// from other plans (not the one being deleted)
+		var activeSub UserSubscription
+		err := tx.Where("user_id = ? AND status = ? AND end_time > ? AND plan_id <> ? AND upgrade_group <> ''",
+			userId, "active", now, planId).
+			Order("end_time desc, id desc").
+			Limit(1).
+			Find(&activeSub).Error
+		if err != nil {
+			return err
+		}
+		if activeSub.Id != 0 {
+			// User still has another active subscription with upgrade group; keep current group
+			continue
+		}
+		// Find the most relevant subscription to determine the downgrade target:
+		// prefer one with an explicit downgrade_group, otherwise use the most recent
+		var targetSub *UserSubscription
+		for i := range userSubList {
+			if userSubList[i].DowngradeGroup != "" {
+				targetSub = &userSubList[i]
+				break
+			}
+		}
+		if targetSub == nil {
+			for i := range userSubList {
+				if targetSub == nil || userSubList[i].EndTime > targetSub.EndTime {
+					targetSub = &userSubList[i]
+				}
+			}
+		}
+		if targetSub == nil {
+			continue
+		}
+		currentGroup, err := getUserGroupByIdTx(tx, userId)
+		if err != nil {
+			return err
+		}
+		// Determine the downgrade target: explicit downgrade_group takes precedence,
+		// otherwise revert to prev_user_group (only when the subscription actually
+		// elevated the user).
+		target := strings.TrimSpace(targetSub.DowngradeGroup)
+		if target == "" {
+			upgradeGroup := strings.TrimSpace(targetSub.UpgradeGroup)
+			prevGroup := strings.TrimSpace(targetSub.PrevUserGroup)
+			if upgradeGroup == "" || prevGroup == "" {
+				continue
+			}
+			if currentGroup != upgradeGroup {
+				continue
+			}
+			target = prevGroup
+		}
+		if target == "" || target == currentGroup {
+			continue
+		}
+		if err := tx.Model(&User{}).Where("id = ?", userId).
+			Update("group", target).Error; err != nil {
+			return err
+		}
+		refreshSubscriptionUserGroupCache(userId, "plan deletion group restoration")
+	}
+	return nil
 }
 
 func getUserGroupByIdTx(tx *gorm.DB, userId int) (string, error) {

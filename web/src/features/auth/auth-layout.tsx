@@ -70,16 +70,12 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       {/* Right — contained key-visual card, centered with breathing room
           around it (not full-bleed), mirroring the claude.ai login. */}
       <div className='hidden items-center justify-center p-8 lg:flex xl:p-12'>
-        <div className='bg-muted relative aspect-[4/5] w-full max-w-[580px] overflow-hidden rounded-[1rem]'>
+        <div className='bg-muted relative aspect-[4/5] w-full max-w-[580px] overflow-hidden rounded-[1rem] grayscale'>
           <img
             src='/seraph-cinematic.jpg'
             alt=''
             aria-hidden
             className='size-full object-cover object-center'
-          />
-          <div
-            aria-hidden
-            className='absolute inset-0 bg-[radial-gradient(120%_80%_at_20%_100%,rgba(196,32,74,0.22)_0%,transparent_60%)]'
           />
         </div>
       </div>

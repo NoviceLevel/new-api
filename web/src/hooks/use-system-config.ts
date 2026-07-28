@@ -170,6 +170,13 @@ export function useSystemConfig(options: UseSystemConfigOptions = {}) {
     if (autoLoad) loadConfig()
   }, [autoLoad, loadConfig])
 
+  // Update document title when system name changes
+  useEffect(() => {
+    if (config.systemName) {
+      document.title = config.systemName
+    }
+  }, [config.systemName])
+
   // Preload logo image when URL changes
   useEffect(() => {
     const { logo } = config

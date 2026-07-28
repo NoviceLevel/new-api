@@ -77,6 +77,11 @@ export const THEME_PRESETS = [
     name: 'Lavender Dream',
     swatches: ['oklch(0.5709 0.1808 306.89)', 'oklch(0.811 0.0589 201.14)'],
   },
+  {
+    value: 'monochrome',
+    name: 'Monochrome',
+    swatches: ['oklch(0.15 0 0)', 'oklch(0.99 0 0)'],
+  },
 ] as const
 
 export type ThemePreset = (typeof THEME_PRESETS)[number]['value']
@@ -116,7 +121,7 @@ export type ThemeCustomization = {
 }
 
 export const DEFAULT_THEME_CUSTOMIZATION: ThemeCustomization = {
-  preset: 'default',
+  preset: 'monochrome',
   font: 'default',
   radius: 'default',
   scale: 'default',
