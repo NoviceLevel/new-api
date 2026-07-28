@@ -1,5 +1,6 @@
 (() => {
   const marker = 'daily-gift-plan-type'
+  const deleteDialogId = 'subscription-plan-delete-dialog'
   let createGiftPlan = false
   let giftPlanTitles = null
   let adminPlans = null
@@ -90,22 +91,60 @@
       button.dataset.dailyPlanDelete = String(plan.id)
       button.className = 'daily-plan-delete'
       button.textContent = '删除'
-      button.addEventListener('click', async () => {
-        if (!window.confirm(`确认删除套餐“${plan.title}”？`)) return
-        button.disabled = true
-        try {
+      button.addEventListener('click', () => {
+        showDeleteDialog(plan, async () => {
+          button.disabled = true
           const response = await fetch(`/api/subscription/admin/plans/${plan.id}`, { method: 'DELETE' })
           if (!response.ok) {
             const payload = await response.json().catch(() => null)
             throw new Error(payload?.message || '删除套餐失败')
           }
           location.reload()
-        } catch (error) {
-          window.alert(error.message || '删除套餐失败')
+        }, () => {
           button.disabled = false
-        }
+        })
       })
       actions.append(button)
+    })
+  }
+
+  const closeDeleteDialog = () => document.getElementById(deleteDialogId)?.remove()
+
+  const showDeleteDialog = (plan, onConfirm, onClose) => {
+    closeDeleteDialog()
+    const root = document.createElement('div')
+    root.id = deleteDialogId
+    root.innerHTML = `
+      <div class="subscription-plan-delete-backdrop" data-delete-dialog-close></div>
+      <section class="subscription-plan-delete-modal" role="dialog" aria-modal="true" aria-labelledby="subscription-plan-delete-title">
+        <h2 id="subscription-plan-delete-title">删除套餐</h2>
+        <p>确认删除“${plan.title}”？此操作不能撤销。</p>
+        <p class="subscription-plan-delete-error" role="alert" hidden></p>
+        <footer>
+          <button type="button" class="subscription-plan-delete-cancel" data-delete-dialog-close>取消</button>
+          <button type="button" class="subscription-plan-delete-confirm">删除</button>
+        </footer>
+      </section>
+    `
+    document.body.append(root)
+    const close = () => {
+      closeDeleteDialog()
+      onClose()
+    }
+    root.querySelectorAll('[data-delete-dialog-close]').forEach((element) => {
+      element.addEventListener('click', close)
+    })
+    const confirm = root.querySelector('.subscription-plan-delete-confirm')
+    const error = root.querySelector('.subscription-plan-delete-error')
+    confirm.addEventListener('click', async () => {
+      confirm.disabled = true
+      try {
+        await onConfirm()
+      } catch (reason) {
+        error.textContent = reason.message || '删除套餐失败'
+        error.hidden = false
+        confirm.disabled = false
+      }
     })
   }
 
@@ -143,6 +182,16 @@
     .daily-gift-plan-badge { display: inline-flex; margin-top: 4px; border: 1px solid #60a5fa; border-radius: 4px; color: #2563eb; padding: 1px 5px; font-size: 11px; font-weight: 600; }
     .daily-plan-delete { border: 0; background: transparent; color: #dc2626; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
     .daily-plan-delete:disabled { cursor: default; opacity: .55; }
+    #${deleteDialogId} { position: fixed; z-index: 1000; inset: 0; }
+    .subscription-plan-delete-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, .42); }
+    .subscription-plan-delete-modal { position: relative; box-sizing: border-box; width: min(420px, calc(100vw - 32px)); margin: 20vh auto 0; padding: 22px; border: 1px solid var(--border, #d5d5d5); border-radius: 8px; background: var(--background, #fff); color: var(--foreground, #171717); box-shadow: 0 20px 50px rgba(0, 0, 0, .24); }
+    .subscription-plan-delete-modal h2 { margin: 0; font-size: 18px; letter-spacing: 0; }
+    .subscription-plan-delete-modal p { margin: 10px 0 0; color: var(--muted-foreground, #6b7280); font-size: 14px; }
+    .subscription-plan-delete-error { color: #dc2626 !important; }
+    .subscription-plan-delete-modal footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .subscription-plan-delete-modal footer button { min-height: 36px; border-radius: 6px; padding: 0 14px; font: inherit; font-weight: 600; cursor: pointer; }
+    .subscription-plan-delete-cancel { border: 1px solid var(--border, #d5d5d5); background: transparent; color: inherit; }
+    .subscription-plan-delete-confirm { border: 1px solid #dc2626; background: #dc2626; color: #fff; }
   `
   document.head.append(style)
 
