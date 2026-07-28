@@ -13,11 +13,24 @@
 }
 
 .snowapi-dock-outer {
-  transition: left 200ms linear;
+  transition: left 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-slot='sidebar-gap'] {
+  transition: width 240ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+[data-slot='sidebar-container'] {
+  transition:
+    left 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    right 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 240ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .snowapi-dock-outer {
+  .snowapi-dock-outer,
+  [data-slot='sidebar-gap'],
+  [data-slot='sidebar-container'] {
     transition: none;
   }
 }
