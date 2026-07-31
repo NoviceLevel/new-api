@@ -10,9 +10,9 @@ import { Link, useLocation } from '@tanstack/react-router'
 import {
   Boxes,
   Home,
-  KeyRound,
   LayoutDashboard,
   LogOut,
+  ScanFace,
   UserRound,
 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -101,7 +101,7 @@ export function NavigationDock() {
         key: 'login',
         title: t('Login'),
         href: '/sign-in',
-        icon: <KeyRound />,
+        icon: <ScanFace />,
       })
     }
 
