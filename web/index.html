@@ -7,8 +7,22 @@
     <meta name="google" content="notranslate" />
 
     <!-- Primary Meta Tags -->
-    <title>KrulTepes</title>
-    <meta name="title" content="KrulTepes" />
+    <title>New API</title>
+    <meta name="title" content="New API" />
+    <script>
+      try {
+        const cachedStatus = localStorage.getItem('status')
+        const cachedSystemName = cachedStatus
+          ? JSON.parse(cachedStatus)?.system_name
+          : null
+        if (typeof cachedSystemName === 'string' && cachedSystemName.trim()) {
+          document.title = cachedSystemName
+          document
+            .querySelector('meta[name="title"]')
+            ?.setAttribute('content', cachedSystemName)
+        }
+      } catch {}
+    </script>
     <meta
       name="description"
       content="Unified AI API gateway and admin dashboard."
