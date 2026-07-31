@@ -169,13 +169,6 @@ section[data-slot='section'] {
   color: color-mix(in oklch, var(--foreground) 82%, var(--muted-foreground)) !important;
 }
 
-/* Keep the brand imagery inside the monochrome art direction as well. */
-img[alt='logo'],
-a[href='https://cherry-ai.com'] svg,
-a[href='https://ccswitch.io'] img {
-  filter: grayscale(1) contrast(1.08);
-}
-
 /* Slightly crisper monochrome surfaces without turning every card into glass. */
 [data-slot='card'] {
   box-shadow: 0 1px 0 oklch(1 0 0 / 55%) inset, 0 16px 42px oklch(0 0 0 / 7%);
