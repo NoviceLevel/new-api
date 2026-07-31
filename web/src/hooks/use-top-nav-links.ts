@@ -62,6 +62,10 @@ export function useTopNavLinks(): TopNavLink[] {
 
   const links: TopNavLink[] = []
 
+  // An empty setting means the public header is intentionally minimal. The
+  // bottom dock remains the primary navigation in the approved layout.
+  if (!status?.HeaderNavModules) return links
+
   // Home
   if (modules?.home !== false) {
     links.push({ title: t('Home'), href: '/' })

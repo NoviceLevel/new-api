@@ -22,7 +22,7 @@ import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const stylesheetPath = fileURLToPath(
-  new URL('../../../public/krulu-theme/monochrome.css', import.meta.url)
+  new URL('../theme-presets.css', import.meta.url)
 )
 
 test('monochrome theme preserves original image and icon colors', () => {

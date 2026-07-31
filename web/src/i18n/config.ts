@@ -20,7 +20,7 @@ import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
-import { convertDetectedLanguage } from './languages'
+import { convertDetectedLanguage, toIntlLocale } from './languages'
 import en from './locales/en.json'
 import fr from './locales/fr.json'
 import ja from './locales/ja.json'
@@ -60,5 +60,13 @@ i18n
       convertDetectedLanguage,
     },
   })
+
+const syncDocumentLanguage = (language?: string) => {
+  if (typeof document === 'undefined') return
+  document.documentElement.lang = toIntlLocale(language ?? i18n.language) ?? 'en'
+}
+
+i18n.on('languageChanged', syncDocumentLanguage)
+syncDocumentLanguage(i18n.resolvedLanguage ?? i18n.language)
 
 export default i18n

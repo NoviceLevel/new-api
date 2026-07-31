@@ -20,23 +20,12 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PublicLayout } from '@/components/layout'
-import { Footer } from '@/components/layout/components/footer'
 import { RichContent } from '@/components/rich-content'
 import { useTheme } from '@/context/theme-provider'
 import { isLikelyHtml } from '@/lib/content-format'
 
-import { Hero } from './components'
+import { KruluCardHome } from './components/krulu-card-home'
 import { useHomePageContent } from './hooks'
-
-// The hero is a dark full-bleed image, so the transparent top-state header needs
-// light text to stay legible. Once scrolled the header becomes a light capsule,
-// where the default tokens are already correct.
-const heroHeaderTone = [
-  'data-[scrolled=false]:[&_nav_a]:text-white/75',
-  'data-[scrolled=false]:[&_nav_a:hover]:text-white',
-  'data-[scrolled=false]:[&_nav_span]:text-white',
-  'data-[scrolled=false]:[&_nav_button]:text-white',
-].join(' ')
 
 export function Home() {
   const { i18n, t } = useTranslation()
@@ -130,10 +119,9 @@ export function Home() {
   return (
     <PublicLayout
       showMainContainer={false}
-      headerProps={{ className: heroHeaderTone }}
+      className='[--background:oklch(0.985_0_0)] [--border:oklch(0.82_0_0)] [--foreground:oklch(0.08_0_0)]'
     >
-      <Hero />
-      <Footer className='border-black/10 bg-[#f4f6f7] text-[#111820] transition-colors duration-500 dark:border-white/10 dark:bg-[#05080a] dark:text-white' />
+      <KruluCardHome />
     </PublicLayout>
   )
 }

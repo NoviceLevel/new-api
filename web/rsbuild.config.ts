@@ -1,6 +1,13 @@
 import type { IncomingMessage } from 'node:http'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { defineConfig, loadEnv } from '@rsbuild/core'
+import { pluginReact } from '@rsbuild/plugin-react'
+import { pluginTailwindcss } from '@rsbuild/plugin-tailwindcss'
+import { tanstackRouter } from '@tanstack/router-plugin/rspack'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ envMode }) => {
   const env = loadEnv({ mode: envMode, prefixes: ['VITE_'] })
@@ -31,14 +38,42 @@ export default defineConfig(({ envMode }) => {
   )
 
   return {
+    plugins: [pluginReact(), pluginTailwindcss({ optimize: false })],
+    splitChunks: {
+      preset: 'default',
+      cacheGroups: {
+        'vendor-react': {
+          test: /node_modules[\\/](react|react-dom)[\\/]/,
+          name: 'vendor-react',
+          chunks: 'all',
+          enforce: true,
+        },
+        'vendor-ui-primitives': {
+          test: /node_modules[\\/](@base-ui|@radix-ui)[\\/]/,
+          name: 'vendor-ui-primitives',
+          chunks: 'all',
+          enforce: true,
+        },
+        'vendor-tanstack': {
+          test: /node_modules[\\/]@tanstack[\\/]/,
+          name: 'vendor-tanstack',
+          chunks: 'all',
+          enforce: true,
+        },
+      },
+    },
     source: {
       entry: {
-        index: './src/mirror-entry.ts',
+        index: './src/main.tsx',
+      },
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
     },
     html: {
-      template: './public/index.html',
-      inject: false,
+      template: './index.html',
     },
     server: {
       host: '0.0.0.0',
@@ -56,6 +91,16 @@ export default defineConfig(({ envMode }) => {
     performance: {
       buildCache: false,
       removeConsole: false,
+    },
+    tools: {
+      rspack: {
+        plugins: [
+          tanstackRouter({
+            target: 'react',
+            autoCodeSplitting: isProduction,
+          }),
+        ],
+      },
     },
   }
 })
