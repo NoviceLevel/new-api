@@ -11,7 +11,6 @@ import {
   Boxes,
   Home,
   LayoutDashboard,
-  LogIn,
   LogOut,
   UserRound,
 } from 'lucide-react'
@@ -101,7 +100,7 @@ export function NavigationDock() {
         key: 'login',
         title: t('Login'),
         href: '/sign-in',
-        icon: <LogIn />,
+        icon: <UserRound />,
       })
     }
 
