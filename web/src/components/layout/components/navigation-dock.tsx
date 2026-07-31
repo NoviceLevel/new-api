@@ -10,6 +10,7 @@ import { Link, useLocation } from '@tanstack/react-router'
 import {
   Boxes,
   Home,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   UserRound,
@@ -100,7 +101,7 @@ export function NavigationDock() {
         key: 'login',
         title: t('Login'),
         href: '/sign-in',
-        icon: <UserRound />,
+        icon: <KeyRound />,
       })
     }
 
