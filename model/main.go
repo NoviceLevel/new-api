@@ -149,8 +149,20 @@ func chooseDB(envName string, isLog bool) (*gorm.DB, common.DatabaseType, error)
 			})
 			return db, common.DatabaseTypePostgreSQL, err
 		}
+		if strings.Contains(dsn, ".db") || dsn == "sqlite" {
+			// Use SQLite
+			common.SysLog("using SQLite as database")
+			sqlitePath := dsn
+			if dsn == "sqlite" {
+				sqlitePath = common.SQLitePath
+			}
+			db, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
+				PrepareStmt: true, // precompile SQL
+			})
+			return db, common.DatabaseTypeSQLite, err
+		}
 		if strings.HasPrefix(dsn, "local") {
-			common.SysLog("SQL_DSN not set, using SQLite as database")
+			common.SysLog("using SQLite as database")
 			db, err := gorm.Open(sqlite.Open(common.SQLitePath), &gorm.Config{
 				PrepareStmt: true, // precompile SQL
 			})
@@ -171,7 +183,6 @@ func chooseDB(envName string, isLog bool) (*gorm.DB, common.DatabaseType, error)
 		})
 		return db, common.DatabaseTypeMySQL, err
 	}
-	// Use SQLite
 	common.SysLog("SQL_DSN not set, using SQLite as database")
 	db, err := gorm.Open(sqlite.Open(common.SQLitePath), &gorm.Config{
 		PrepareStmt: true, // precompile SQL
@@ -529,6 +540,8 @@ func ensureSubscriptionPlanTableSQLite() error {
 ` + "`custom_seconds`" + ` bigint NOT NULL DEFAULT 0,
 ` + "`enabled`" + ` numeric DEFAULT 1,
 ` + "`sort_order`" + ` integer DEFAULT 0,
+` + "`deletion_scheduled_at`" + ` bigint DEFAULT 0,
+` + "`enabled_before_deletion`" + ` numeric DEFAULT 0,
 ` + "`is_daily_gift`" + ` numeric DEFAULT 0,
 ` + "`allow_balance_pay`" + ` numeric DEFAULT 1,
 ` + "`allow_wallet_overflow`" + ` numeric DEFAULT 1,
@@ -567,6 +580,8 @@ PRIMARY KEY (` + "`id`" + `)
 		{Name: "custom_seconds", DDL: "`custom_seconds` bigint NOT NULL DEFAULT 0"},
 		{Name: "enabled", DDL: "`enabled` numeric DEFAULT 1"},
 		{Name: "sort_order", DDL: "`sort_order` integer DEFAULT 0"},
+		{Name: "deletion_scheduled_at", DDL: "`deletion_scheduled_at` bigint DEFAULT 0"},
+		{Name: "enabled_before_deletion", DDL: "`enabled_before_deletion` numeric DEFAULT 0"},
 		{Name: "is_daily_gift", DDL: "`is_daily_gift` numeric DEFAULT 0"},
 		{Name: "allow_balance_pay", DDL: "`allow_balance_pay` numeric DEFAULT 1"},
 		{Name: "allow_wallet_overflow", DDL: "`allow_wallet_overflow` numeric DEFAULT 1"},

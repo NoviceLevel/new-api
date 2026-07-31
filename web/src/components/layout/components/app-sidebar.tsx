@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { Link } from '@tanstack/react-router'
 
 import { Sidebar, SidebarContent, SidebarRail } from '@/components/ui/sidebar'
 import { useLayout } from '@/context/layout-provider'
@@ -47,31 +48,54 @@ export function AppSidebar() {
   const { collapsible, variant } = useLayout()
   const { key, view, navGroups } = useSidebarView()
   const shouldReduce = useReducedMotion()
+  const dockItems = navGroups.flatMap((group) =>
+    group.items.flatMap((item) => {
+      if (item.items) return item.items
+      if ('url' in item && item.url) return [item]
+      return []
+    })
+  )
 
   return (
-    <Sidebar collapsible={collapsible} variant={variant}>
-      {view && <SidebarViewHeader view={view} />}
+    <>
+      <div data-user-dock-source hidden>
+        {dockItems.map((item) => {
+          const Icon = item.icon
+          return (
+            <Link key={String(item.url)} to={item.url}>
+              {Icon && <Icon />}
+              <span>{item.title}</span>
+            </Link>
+          )
+        })}
+      </div>
 
-      <SidebarContent className='py-2'>
-        <AnimatePresence mode='wait' initial={false}>
-          <motion.div
-            key={key}
-            initial={
-              shouldReduce ? false : MOTION_VARIANTS.sidebarSlide.initial
-            }
-            animate={MOTION_VARIANTS.sidebarSlide.animate}
-            exit={shouldReduce ? undefined : MOTION_VARIANTS.sidebarSlide.exit}
-            transition={MOTION_TRANSITION.fast}
-            className='flex flex-col'
-          >
-            {navGroups.map((props) => (
-              <NavGroup key={props.id || props.title} {...props} />
-            ))}
-          </motion.div>
-        </AnimatePresence>
-      </SidebarContent>
+      <Sidebar collapsible={collapsible} variant={variant}>
+        {view && <SidebarViewHeader view={view} />}
 
-      <SidebarRail />
-    </Sidebar>
+        <SidebarContent className='py-2'>
+          <AnimatePresence mode='wait' initial={false}>
+            <motion.div
+              key={key}
+              initial={
+                shouldReduce ? false : MOTION_VARIANTS.sidebarSlide.initial
+              }
+              animate={MOTION_VARIANTS.sidebarSlide.animate}
+              exit={
+                shouldReduce ? undefined : MOTION_VARIANTS.sidebarSlide.exit
+              }
+              transition={MOTION_TRANSITION.fast}
+              className='flex flex-col'
+            >
+              {navGroups.map((props) => (
+                <NavGroup key={props.id || props.title} {...props} />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </SidebarContent>
+
+        <SidebarRail />
+      </Sidebar>
+    </>
   )
 }

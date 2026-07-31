@@ -61,7 +61,16 @@
   const remember = (payload) => {
     const accessToken = payload?.data?.access_token
     if (typeof accessToken === 'string' && accessToken) {
+      const previousToken = token()
       sessionStorage.setItem(tokenKey, accessToken)
+      if (accessToken !== previousToken) {
+        const role = payload?.data?.user?.role
+        document.dispatchEvent(
+          new CustomEvent('krulu:auth-changed', {
+            detail: { role: Number.isInteger(role) ? role : null },
+          })
+        )
+      }
     }
   }
   const isApi = (url) => new URL(url, location.href).pathname.startsWith('/api/')
@@ -122,7 +131,7 @@
     }
 
     if (isApi(request.url) && !isAuthBootstrap(request.url)) {
-      authReady.finally(send)
+      void authReady.then(send, send)
     } else {
       send()
     }

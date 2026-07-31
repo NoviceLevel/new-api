@@ -21,6 +21,8 @@ import {
   Box,
   CreditCard,
   FileText,
+  Gift,
+  HeartPulse,
   Key,
   LayoutDashboard,
   ListTodo,
@@ -34,7 +36,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { type SidebarData } from '@/components/layout/types'
+import type { SidebarData } from '@/components/layout/types'
 import { ROLE } from '@/lib/roles'
 
 /**
@@ -73,6 +75,11 @@ export function useSidebarData(): SidebarData {
             icon: FileText,
           },
           {
+            title: t('Model health'),
+            url: '/model-health',
+            icon: HeartPulse,
+          },
+          {
             title: t('Task Logs'),
             url: '/usage-logs/task',
             activeUrls: ['/usage-logs/drawing'],
@@ -85,6 +92,11 @@ export function useSidebarData(): SidebarData {
         id: 'personal',
         title: t('Personal'),
         items: [
+          {
+            title: t('Gift'),
+            url: '/gift',
+            icon: Gift,
+          },
           {
             title: t('Wallet'),
             url: '/wallet',
