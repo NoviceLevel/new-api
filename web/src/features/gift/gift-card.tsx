@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { CheckCircle2, Gift as GiftIcon, LoaderCircle } from 'lucide-react'
+import { Gift as GiftIcon } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -98,15 +98,6 @@ export function GiftCard(props: GiftCardProps) {
     void activate()
   }
 
-  let actionIcon = <GiftIcon aria-hidden='true' />
-  if (props.checkingIn) {
-    actionIcon = (
-      <LoaderCircle className='gift-lanyard__spinner' aria-hidden='true' />
-    )
-  } else if (checkedIn) {
-    actionIcon = <CheckCircle2 aria-hidden='true' />
-  }
-
   return (
     <section
       className='gift-lanyard'
@@ -135,23 +126,17 @@ export function GiftCard(props: GiftCardProps) {
 
       <button
         type='button'
-        className='gift-lanyard__action'
+        className='gift-lanyard__checkin-control sr-only'
         data-complete={checkedIn}
         disabled={checkedIn || props.checkingIn}
         onClick={() => void activate()}
         onKeyDown={handleKeyDown}
       >
-        {actionIcon}
-        <span>{checkedIn ? t('Checked in') : t('Check in now')}</span>
+        {checkedIn ? t('Checked in') : t('Check in now')}
       </button>
       <span className='sr-only' aria-live='polite'>
         {checkedIn ? props.prizeName : ''}
       </span>
-      <p className='gift-lanyard__hint'>
-        {checkedIn
-          ? t('Rewards will be added directly to your balance')
-          : t('Check in daily to receive random quota rewards')}
-      </p>
     </section>
   )
 }

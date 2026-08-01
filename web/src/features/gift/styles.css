@@ -25,7 +25,6 @@ For commercial licensing, please contact support@quantumnous.com
 }
 
 .gift-lanyard {
-  --gift-accent: oklch(0.61 0.12 166);
   display: flex;
   width: min(100%, 820px);
   flex-direction: column;
@@ -105,67 +104,6 @@ For commercial licensing, please contact support@quantumnous.com
   color: rgb(224 247 238 / 64%);
 }
 
-.gift-lanyard__action {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: -30px;
-  border: 1px solid color-mix(in oklch, var(--gift-accent) 38%, var(--border));
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--gift-accent) 12%, var(--background));
-  padding: 0 18px;
-  color: color-mix(in oklch, var(--gift-accent) 78%, var(--foreground));
-  font-size: 13px;
-  font-weight: 750;
-  box-shadow: 0 10px 26px rgb(15 91 68 / 10%);
-  transition:
-    transform 180ms ease,
-    background 180ms ease,
-    border-color 180ms ease;
-}
-
-.gift-lanyard__action:not(:disabled):hover {
-  border-color: color-mix(in oklch, var(--gift-accent) 60%, var(--border));
-  background: color-mix(in oklch, var(--gift-accent) 17%, var(--background));
-  transform: translateY(-2px);
-}
-
-.gift-lanyard__action:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 3px;
-}
-
-.gift-lanyard__action:disabled {
-  cursor: default;
-  opacity: 0.72;
-}
-
-.gift-lanyard__action svg {
-  width: 16px;
-  height: 16px;
-}
-
-.gift-lanyard__hint {
-  max-width: 28rem;
-  margin: 10px 1rem 0;
-  color: var(--muted-foreground);
-  font-size: 12px;
-  line-height: 1.55;
-  text-align: center;
-}
-
-.gift-lanyard__spinner {
-  animation: gift-lanyard-spin 900ms linear infinite;
-}
-
-@keyframes gift-lanyard-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (max-width: 640px) {
   .gift-stage {
     min-height: 0;
@@ -174,19 +112,5 @@ For commercial licensing, please contact support@quantumnous.com
 
   .gift-lanyard__scene {
     height: 540px;
-  }
-
-  .gift-lanyard__action {
-    margin-top: -22px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gift-lanyard__action {
-    transition: none;
-  }
-
-  .gift-lanyard__spinner {
-    animation-duration: 1.6s;
   }
 }

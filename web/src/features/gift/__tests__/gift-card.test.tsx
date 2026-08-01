@@ -96,7 +96,7 @@ describe('GiftCard lanyard check-in interaction', () => {
       return true
     })
     const button = rendered.container.querySelector<HTMLButtonElement>(
-      '.gift-lanyard__action'
+      '.gift-lanyard__checkin-control'
     )
 
     assert.ok(button)
@@ -118,7 +118,7 @@ describe('GiftCard lanyard check-in interaction', () => {
   test('keeps the lanyard action available when check-in is rejected', async () => {
     const rendered = await renderCard(async () => false)
     const button = rendered.container.querySelector<HTMLButtonElement>(
-      '.gift-lanyard__action'
+      '.gift-lanyard__checkin-control'
     )
 
     assert.ok(button)
