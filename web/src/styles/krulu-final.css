@@ -798,6 +798,11 @@ body {
   }
 }
 
+/* Public pages (e.g. Model Square) — add room for the floating dock */
+.relative.min-h-svh.overflow-x-clip:has(.krulu-dock-outer) {
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+}
+
 @media (max-width: 767px) {
   .krulu-dock-outer {
     bottom: calc(0.5rem + env(safe-area-inset-bottom));
