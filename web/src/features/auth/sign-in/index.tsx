@@ -16,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { Gemini } from '@lobehub/icons'
 import { useSearch } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 
@@ -35,11 +36,7 @@ export function SignIn() {
     <AuthLayout>
       <div className='w-full space-y-8'>
         <div className='space-y-5'>
-          <MetallicPaint
-            imageSrc={
-              status?.logo || '/krulu-theme/krulu-favicon.png?v=20260717-1'
-            }
-          />
+          <MetallicPaint icon={<Gemini size='100%' />} label='Gemini' />
           <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>
             {t('Sign in')}
           </h2>

@@ -6,7 +6,7 @@ it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
 const VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -162,7 +162,9 @@ void main(){
 }`
 
 type MetallicPaintProps = {
-  imageSrc: string
+  imageSrc?: string
+  icon?: ReactNode
+  label?: string
   className?: string
 }
 
@@ -274,8 +276,11 @@ function prepareLogoTexture(image: HTMLImageElement): ImageData {
 
 export function MetallicPaint({
   imageSrc,
+  icon,
+  label = 'Metallic icon',
   className = '',
 }: MetallicPaintProps) {
+  const iconRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const glRef = useRef<WebGL2RenderingContext>(null)
   const programRef = useRef<WebGLProgram>(null)
@@ -287,8 +292,28 @@ export function MetallicPaint({
   const lastFrameRef = useRef(0)
   const firstFrameRef = useRef(false)
   const [initialized, setInitialized] = useState(false)
+  const [iconSrc, setIconSrc] = useState<string>()
   const [textureReady, setTextureReady] = useState(false)
   const [rendered, setRendered] = useState(false)
+
+  useEffect(() => {
+    if (!icon) {
+      setIconSrc(undefined)
+      return
+    }
+
+    const svg = iconRef.current?.querySelector('svg')
+    if (!svg) return
+
+    const source = svg.cloneNode(true) as SVGSVGElement
+    source.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    source.setAttribute('width', '512')
+    source.setAttribute('height', '512')
+    source.setAttribute('color', '#111111')
+    setIconSrc(
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source.outerHTML)}`
+    )
+  }, [icon])
 
   const initializeGL = useCallback(() => {
     const canvas = canvasRef.current
@@ -394,14 +419,15 @@ export function MetallicPaint({
   }, [initializeGL])
 
   useEffect(() => {
-    if (!initialized || !imageSrc) return
+    const textureSource = iconSrc || imageSrc
+    if (!initialized || !textureSource) return
     let cancelled = false
     setTextureReady(false)
     setRendered(false)
     firstFrameRef.current = false
     const image = new Image()
     image.crossOrigin = 'anonymous'
-    image.onload = () => {
+    image.addEventListener('load', () => {
       if (cancelled) return
       try {
         const gl = glRef.current
@@ -443,12 +469,12 @@ export function MetallicPaint({
       } catch {
         setTextureReady(false)
       }
-    }
-    image.src = imageSrc
+    })
+    image.src = textureSource
     return () => {
       cancelled = true
     }
-  }, [imageSrc, initialized])
+  }, [iconSrc, imageSrc, initialized])
 
   useEffect(() => {
     const gl = glRef.current
@@ -504,14 +530,24 @@ export function MetallicPaint({
       className={`metallic-paint ${className}`.trim()}
       data-ready={rendered}
       role='img'
-      aria-label='Krulu'
+      aria-label={label}
     >
-      <img
-        src={imageSrc}
-        alt=''
-        className='metallic-paint__fallback'
-        aria-hidden='true'
-      />
+      {icon ? (
+        <div
+          ref={iconRef}
+          className='metallic-paint__fallback metallic-paint__fallback-icon'
+          aria-hidden='true'
+        >
+          {icon}
+        </div>
+      ) : (
+        <img
+          src={imageSrc}
+          alt=''
+          className='metallic-paint__fallback'
+          aria-hidden='true'
+        />
+      )}
       <canvas
         ref={canvasRef}
         className='metallic-paint__canvas'
