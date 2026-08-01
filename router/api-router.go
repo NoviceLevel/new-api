@@ -179,21 +179,6 @@ func SetApiRouter(router *gin.Engine) {
 			subscriptionRoute.POST("/creem/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestCreemPay)
 			subscriptionRoute.POST("/waffo-pancake/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestWaffoPancakePay)
 		}
-		// Gift routes use two-layer protection:
-		// 1. CriticalRateLimit - general request rate limiting to prevent abuse
-		// 2. Business rule enforcement - the "once per day" rule is handled by:
-		//    a. DB unique index idx_daily_gift_user_date on (user_id, gift_date)
-		//       prevents duplicate daily gift records at the database level
-		//    b. Controller graceful handling - ScratchDailyGift and RedeemDailyGift
-		//       return the existing gift state without error on duplicate calls,
-		//       so repeated requests are idempotent and safe
-		giftRoute := apiRouter.Group("/gift")
-		giftRoute.Use(middleware.UserAuth())
-		{
-			giftRoute.GET("/daily", controller.GetDailyGift)
-			giftRoute.POST("/daily/scratch", middleware.CriticalRateLimit(), controller.ScratchDailyGift)
-			giftRoute.POST("/daily/redeem", middleware.CriticalRateLimit(), controller.RedeemDailyGift)
-		}
 		subscriptionAdminRoute := apiRouter.Group("/subscription/admin")
 		subscriptionAdminRoute.Use(middleware.AdminAuth())
 		{
