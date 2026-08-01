@@ -171,7 +171,7 @@ export function Gift() {
   if (statusLoading || (checkinEnabled && query.isLoading)) {
     content = (
       <div className='gift-stage'>
-        <Skeleton className='h-[500px] w-full max-w-[720px] rounded-lg' />
+        <Skeleton className='h-[380px] w-full max-w-[620px] rounded-xl' />
       </div>
     )
   } else if (!checkinEnabled) {

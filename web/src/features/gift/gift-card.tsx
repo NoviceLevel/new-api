@@ -16,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { CheckCircle2, Gift as GiftIcon, Sparkles, Ticket } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -64,9 +65,9 @@ export function GiftCard(props: GiftCardProps) {
 
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     context.globalCompositeOperation = 'source-over'
-    context.fillStyle = '#e4e4e7'
+    context.fillStyle = '#e6e8ec'
     context.fillRect(0, 0, bounds.width, bounds.height)
-    context.fillStyle = 'rgba(39, 39, 42, 0.06)'
+    context.fillStyle = 'rgba(39, 39, 42, 0.05)'
     for (let x = 0; x < bounds.width; x += 5) {
       for (let y = 0; y < bounds.height; y += 5) {
         if ((x + y) % 15 === 0) context.fillRect(x, y, 2, 2)
@@ -77,7 +78,11 @@ export function GiftCard(props: GiftCardProps) {
     context.fillStyle = '#71717a'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.fillText(t('Check in now'), bounds.width / 2, bounds.height / 2)
+    context.fillText(
+      t('Scratch to reveal your gift'),
+      bounds.width / 2,
+      bounds.height / 2
+    )
     context.globalCompositeOperation = 'destination-out'
     context.lineJoin = 'round'
     context.lineCap = 'round'
@@ -190,15 +195,48 @@ export function GiftCard(props: GiftCardProps) {
     }
   }
 
+  const todayLabel = new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date())
+
   return (
     <article className='gift-scratch-card'>
       <header className='gift-scratch-card__header'>
-        <span className='gift-scratch-card__brand'>{props.systemName}</span>
-        <h3>{t('Daily Check-in')}</h3>
-        <p>{t('Check in daily to receive random quota rewards')}</p>
+        <div className='gift-scratch-card__topline'>
+          <div className='gift-scratch-card__brand'>
+            <span className='gift-scratch-card__brand-mark' aria-hidden='true'>
+              <GiftIcon />
+            </span>
+            <span>{props.systemName}</span>
+          </div>
+          <time>{todayLabel}</time>
+        </div>
+        <div className='gift-scratch-card__title-row'>
+          <div>
+            <h3>{t('Daily Check-in')}</h3>
+            <p>{t('Check in daily to receive random quota rewards')}</p>
+          </div>
+          <div
+            className='gift-scratch-card__status'
+            data-complete={revealed}
+            aria-live='polite'
+          >
+            {revealed ? (
+              <CheckCircle2 aria-hidden='true' />
+            ) : (
+              <Sparkles aria-hidden='true' />
+            )}
+            <span>{revealed ? t('Checked in') : t('Check in now')}</span>
+          </div>
+        </div>
       </header>
 
       <div className='gift-scratch-card__scratch-area'>
+        <div className='gift-scratch-card__ticket-label'>
+          <Ticket aria-hidden='true' />
+          <span>{t("Today's gift")}</span>
+        </div>
         <div className='gift-scratch-card__prize'>
           <span>{t('Check-in Rewards')}</span>
           <strong>{props.prizeName || t('A daily surprise')}</strong>
@@ -222,8 +260,13 @@ export function GiftCard(props: GiftCardProps) {
       </div>
 
       <footer className='gift-scratch-card__footer'>
-        <div className='gift-scratch-card__barcode' aria-hidden='true' />
-        <p>{t('Rewards will be added directly to your balance')}</p>
+        <Sparkles aria-hidden='true' />
+        <div>
+          <strong>
+            {revealed ? t('Checked in') : t('Scratch to reveal your gift')}
+          </strong>
+          <span>{t('Rewards will be added directly to your balance')}</span>
+        </div>
       </footer>
     </article>
   )

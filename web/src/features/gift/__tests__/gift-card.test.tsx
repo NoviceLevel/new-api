@@ -72,7 +72,10 @@ await i18next.use(initReactI18next).init({
           'Check in daily to receive random quota rewards',
         'Check in now': 'Check in now',
         'Check-in Rewards': 'Check-in Rewards',
+        'Checked in': 'Checked in',
         'Daily Check-in': 'Daily Check-in',
+        "Today's gift": "Today's gift",
+        'Scratch to reveal your gift': 'Scratch to reveal your gift',
         'Rewards will be added directly to your balance':
           'Rewards will be added directly to your balance',
       },
