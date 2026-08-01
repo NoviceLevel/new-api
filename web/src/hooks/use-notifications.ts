@@ -62,7 +62,12 @@ function getAnnouncementKey(item: Record<string, unknown>): string {
  * Hook to manage notifications (Notice + Announcements)
  * Provides unread counts and read status management
  */
-export function useNotifications() {
+type UseNotificationsOptions = {
+  enabled?: boolean
+}
+
+export function useNotifications(options: UseNotificationsOptions = {}) {
+  const { enabled = true } = options
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'notice' | 'announcements'>(
     'notice'
@@ -76,6 +81,7 @@ export function useNotifications() {
   } = useQuery({
     queryKey: ['notice'],
     queryFn: getNotice,
+    enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
@@ -172,7 +178,7 @@ export function useNotifications() {
     // Data
     notice: noticeContent,
     announcements,
-    loading: noticeLoading || statusLoading,
+    loading: (enabled && noticeLoading) || statusLoading,
 
     // Unread counts
     unreadCount: unreadCounts.total,

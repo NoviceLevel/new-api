@@ -58,14 +58,13 @@ export function NavigationDock() {
   const { t } = useTranslation()
   const pathname = useLocation({ select: (location) => location.pathname })
   const user = useAuthStore((state) => state.auth.user)
+  const isCommonUser = !!user && user.role < ROLE.ADMIN
   const { navGroups } = useSidebarView()
-  const notifications = useNotifications()
+  const notifications = useNotifications({ enabled: isCommonUser })
   const panelRef = useRef<HTMLElement>(null)
   const frameRef = useRef<number | null>(null)
   const [signOutOpen, setSignOutOpen] = useState(false)
   const [tooltip, setTooltip] = useState<DockTooltip | null>(null)
-
-  const isCommonUser = !!user && user.role < ROLE.ADMIN
 
   const standardItems = useMemo<DockLinkItem[]>(() => {
     const items: DockLinkItem[] = [
