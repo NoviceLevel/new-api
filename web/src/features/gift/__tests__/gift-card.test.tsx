@@ -41,6 +41,7 @@ for (const key of domGlobals) {
 }
 
 const canvasContext = {
+  createLinearGradient: () => ({ addColorStop: () => undefined }),
   setTransform: () => undefined,
   fillRect: () => undefined,
   fillText: () => undefined,

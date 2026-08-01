@@ -66,12 +66,22 @@ export function GiftCard(props: GiftCardProps) {
 
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     context.globalCompositeOperation = 'source-over'
-    context.fillStyle = '#dcebe5'
+    const foilGradient = context.createLinearGradient(
+      0,
+      0,
+      bounds.width,
+      bounds.height
+    )
+    foilGradient.addColorStop(0, '#b9ddcc')
+    foilGradient.addColorStop(0.42, '#eaf7ef')
+    foilGradient.addColorStop(0.58, '#9fcdb9')
+    foilGradient.addColorStop(1, '#d7ece1')
+    context.fillStyle = foilGradient
     context.fillRect(0, 0, bounds.width, bounds.height)
-    context.fillStyle = 'rgba(43, 109, 95, 0.09)'
+    context.fillStyle = 'rgba(30, 92, 75, 0.16)'
     for (let x = 0; x < bounds.width; x += 5) {
       for (let y = 0; y < bounds.height; y += 5) {
-        if ((x + y) % 15 === 0) context.fillRect(x, y, 2, 2)
+        if ((x + y) % 15 === 0) context.fillRect(x, y, 3, 3)
       }
     }
     context.strokeStyle = 'rgba(255, 255, 255, 0.35)'
@@ -89,21 +99,11 @@ export function GiftCard(props: GiftCardProps) {
       context.lineTo(x + bounds.height, bounds.height)
       context.stroke()
     }
-    context.font =
-      '500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-    context.fillStyle = '#47776e'
-    context.textAlign = 'center'
-    context.textBaseline = 'middle'
-    context.fillText(
-      t('Scratch to reveal your gift'),
-      bounds.width / 2,
-      bounds.height / 2
-    )
     context.globalCompositeOperation = 'destination-out'
     context.lineJoin = 'round'
     context.lineCap = 'round'
     context.lineWidth = 26
-  }, [revealed, t])
+  }, [revealed])
 
   useEffect(() => {
     if (props.checkedIn && !startedLocallyRef.current) {
@@ -276,6 +276,12 @@ export function GiftCard(props: GiftCardProps) {
           <strong>{props.prizeName || t('A daily surprise')}</strong>
           <span className='gift-scratch-card__prize-caption'>
             {t('Rewards will be added directly to your balance')}
+          </span>
+        </div>
+        <div className='gift-scratch-card__foil-overlay' aria-hidden='true'>
+          <span className='gift-scratch-card__foil-hint'>
+            <GiftIcon />
+            <span>{t('Scratch to reveal your gift')}</span>
           </span>
         </div>
         <canvas
