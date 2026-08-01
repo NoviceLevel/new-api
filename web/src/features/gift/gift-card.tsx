@@ -47,6 +47,7 @@ export function GiftCard(props: GiftCardProps) {
   const startedLocallyRef = useRef(false)
   const previousPointRef = useRef<Point | null>(null)
   const [revealed, setRevealed] = useState(props.checkedIn)
+  const [scratching, setScratching] = useState(false)
 
   const initializeCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -65,17 +66,24 @@ export function GiftCard(props: GiftCardProps) {
 
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     context.globalCompositeOperation = 'source-over'
-    context.fillStyle = '#e5efec'
+    context.fillStyle = '#dcebe5'
     context.fillRect(0, 0, bounds.width, bounds.height)
-    context.fillStyle = 'rgba(43, 109, 95, 0.07)'
+    context.fillStyle = 'rgba(43, 109, 95, 0.09)'
     for (let x = 0; x < bounds.width; x += 5) {
       for (let y = 0; y < bounds.height; y += 5) {
         if ((x + y) % 15 === 0) context.fillRect(x, y, 2, 2)
       }
     }
-    context.strokeStyle = 'rgba(43, 109, 95, 0.035)'
+    context.strokeStyle = 'rgba(255, 255, 255, 0.35)'
     context.lineWidth = 1
-    for (let x = -bounds.height; x < bounds.width; x += 18) {
+    for (let x = -bounds.height; x < bounds.width; x += 22) {
+      context.beginPath()
+      context.moveTo(x, 0)
+      context.lineTo(x + bounds.height, bounds.height)
+      context.stroke()
+    }
+    context.strokeStyle = 'rgba(43, 109, 95, 0.06)'
+    for (let x = -bounds.height + 11; x < bounds.width; x += 22) {
       context.beginPath()
       context.moveTo(x, 0)
       context.lineTo(x + bounds.height, bounds.height)
@@ -133,6 +141,14 @@ export function GiftCard(props: GiftCardProps) {
     return { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
   }
 
+  const updateScratchPosition = (event: PointerEvent<HTMLCanvasElement>) => {
+    const area = event.currentTarget.parentElement
+    if (!area) return
+    const bounds = area.getBoundingClientRect()
+    area.style.setProperty('--scratch-x', `${event.clientX - bounds.left}px`)
+    area.style.setProperty('--scratch-y', `${event.clientY - bounds.top}px`)
+  }
+
   const scratchPoint = (point: Point) => {
     const context = canvasRef.current?.getContext('2d', {
       willReadFrequently: true,
@@ -166,13 +182,16 @@ export function GiftCard(props: GiftCardProps) {
   const handlePointerDown = async (event: PointerEvent<HTMLCanvasElement>) => {
     if (revealed) return
     event.preventDefault()
+    updateScratchPosition(event)
     const point = pointFromEvent(event)
     event.currentTarget.setPointerCapture(event.pointerId)
     drawingRef.current = true
     previousPointRef.current = point
+    setScratching(true)
     if (!(await ensureScratched())) {
       drawingRef.current = false
       previousPointRef.current = null
+      setScratching(false)
       return
     }
     scratchPoint(point)
@@ -181,6 +200,7 @@ export function GiftCard(props: GiftCardProps) {
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current || props.checkingIn || revealed) return
     event.preventDefault()
+    updateScratchPosition(event)
     const point = pointFromEvent(event)
     const previous = previousPointRef.current
     const context = canvasRef.current?.getContext('2d', {
@@ -193,6 +213,11 @@ export function GiftCard(props: GiftCardProps) {
       context.stroke()
     }
     previousPointRef.current = point
+  }
+
+  const handlePointerEnd = () => {
+    setScratching(false)
+    revealIfComplete()
   }
 
   const handleKeyDown = async (event: KeyboardEvent<HTMLCanvasElement>) => {
@@ -236,7 +261,11 @@ export function GiftCard(props: GiftCardProps) {
         </div>
       </header>
 
-      <div className='gift-scratch-card__scratch-area'>
+      <div
+        className='gift-scratch-card__scratch-area'
+        data-revealed={revealed}
+        data-scratching={scratching}
+      >
         <div className='gift-scratch-card__prize'>
           <span className='gift-scratch-card__prize-icon' aria-hidden='true'>
             <GiftIcon />
@@ -260,9 +289,9 @@ export function GiftCard(props: GiftCardProps) {
           data-busy={props.checkingIn}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
-          onPointerUp={revealIfComplete}
-          onPointerCancel={revealIfComplete}
-          onPointerLeave={revealIfComplete}
+          onPointerUp={handlePointerEnd}
+          onPointerCancel={handlePointerEnd}
+          onPointerLeave={handlePointerEnd}
           onKeyDown={handleKeyDown}
         />
       </div>
