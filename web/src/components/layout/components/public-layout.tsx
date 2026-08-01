@@ -44,7 +44,7 @@ export function PublicLayout(props: PublicLayoutProps) {
         props.className
       )}
     >
-      {props.showHeader !== false && (
+      {props.showHeader === true && (
         <PublicHeader
           navContent={props.navContent}
           navLinks={props.navLinks}
@@ -61,7 +61,7 @@ export function PublicLayout(props: PublicLayoutProps) {
         <main
           className={cn(
             'container px-4 py-6 md:px-4',
-            props.showHeader !== false && 'pt-20'
+            props.showHeader === true && 'pt-20'
           )}
         >
           {props.children}
