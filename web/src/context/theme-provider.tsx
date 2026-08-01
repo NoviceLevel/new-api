@@ -16,7 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createContext, useCallback, useContext, useEffect, useMemo } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react'
 
 import { removeCookie } from '@/lib/cookies'
 
@@ -81,11 +87,7 @@ export function ThemeProvider({
     [defaultTheme, resolvedTheme, resetTheme, theme, setTheme]
   )
 
-  return (
-    <ThemeContext value={contextValue}>
-      {children}
-    </ThemeContext>
-  )
+  return <ThemeContext value={contextValue}>{children}</ThemeContext>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

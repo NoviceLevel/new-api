@@ -28,8 +28,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-import type { PlanRecord } from '../types'
 import { cancelPlanDeletion } from '../api'
+import type { PlanRecord } from '../types'
 import { useSubscriptions } from './subscriptions-provider'
 
 interface DataTableRowActionsProps {
@@ -73,7 +73,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       toast.success('已取消自动删除')
       triggerRefresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('Operation failed'))
+      toast.error(
+        error instanceof Error ? error.message : t('Operation failed')
+      )
     }
   }
 

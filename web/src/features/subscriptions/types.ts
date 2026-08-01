@@ -35,7 +35,7 @@ export const subscriptionPlanSchema = z.object({
   quota_reset_custom_seconds: z.number().optional(),
   enabled: z.boolean(),
   sort_order: z.number(),
-	deletion_scheduled_at: z.number().optional().default(0),
+  deletion_scheduled_at: z.number().optional().default(0),
   allow_balance_pay: z.boolean().optional().default(true),
   allow_wallet_overflow: z.boolean().optional().default(true),
   max_purchase_per_user: z.number(),
@@ -51,9 +51,9 @@ export type SubscriptionPlan = z.infer<typeof subscriptionPlanSchema>
 
 export interface PlanRecord {
   plan: SubscriptionPlan
-	active_subscription_count?: number
-	pending_gift_count?: number
-	deletion_eligible_at?: number
+  active_subscription_count?: number
+  pending_gift_count?: number
+  deletion_eligible_at?: number
 }
 
 // ============================================================================

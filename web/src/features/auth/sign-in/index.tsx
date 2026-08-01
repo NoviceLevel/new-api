@@ -37,8 +37,7 @@ export function SignIn() {
         <div className='space-y-5'>
           <MetallicPaint
             imageSrc={
-              status?.logo ||
-              '/krulu-theme/krulu-favicon.png?v=20260717-1'
+              status?.logo || '/krulu-theme/krulu-favicon.png?v=20260717-1'
             }
           />
           <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>

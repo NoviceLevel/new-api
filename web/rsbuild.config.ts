@@ -25,7 +25,7 @@ export default defineConfig(({ envMode }) => {
             const setCookie = proxyRes.headers['set-cookie']
             if (!setCookie) return
             proxyRes.headers['set-cookie'] = setCookie.map((cookie) =>
-              cookie.replace(/;\s*secure/gi, '')
+              cookie.replaceAll(/;\s*secure/gi, '')
             )
           },
         },

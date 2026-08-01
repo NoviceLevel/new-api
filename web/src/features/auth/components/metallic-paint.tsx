@@ -245,20 +245,25 @@ function prepareLogoTexture(image: HTMLImageElement): ImageData {
             (mask[index + width] ? distance[index + width] : 0) +
             (mask[index - width] ? distance[index - width] : 0)) /
           4
-        distance[index] = 1.85 * (0.01 + neighborAverage) - 0.85 * distance[index]
+        distance[index] =
+          1.85 * (0.01 + neighborAverage) - 0.85 * distance[index]
       }
     }
   }
 
   let maximumDistance = 0
-  for (const value of distance) maximumDistance = Math.max(maximumDistance, value)
+  for (const value of distance) {
+    maximumDistance = Math.max(maximumDistance, value)
+  }
   maximumDistance ||= 1
 
   const texture = context.createImageData(width, height)
   for (let index = 0; index < pixelCount; index += 1) {
     const offset = index * 4
     const normalizedDistance = distance[index] / maximumDistance
-    const shade = Math.round(255 * (1 - normalizedDistance * normalizedDistance))
+    const shade = Math.round(
+      255 * (1 - normalizedDistance * normalizedDistance)
+    )
     texture.data[offset] = shade
     texture.data[offset + 1] = shade
     texture.data[offset + 2] = shade
@@ -267,7 +272,10 @@ function prepareLogoTexture(image: HTMLImageElement): ImageData {
   return texture
 }
 
-export function MetallicPaint({ imageSrc, className = '' }: MetallicPaintProps) {
+export function MetallicPaint({
+  imageSrc,
+  className = '',
+}: MetallicPaintProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const glRef = useRef<WebGL2RenderingContext>(null)
   const programRef = useRef<WebGLProgram>(null)
@@ -319,10 +327,15 @@ export function MetallicPaint({ imageSrc, className = '' }: MetallicPaintProps) 
     }
 
     const uniforms: UniformMap = {}
-    const uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS) as number
+    const uniformCount = gl.getProgramParameter(
+      program,
+      gl.ACTIVE_UNIFORMS
+    ) as number
     for (let index = 0; index < uniformCount; index += 1) {
       const uniform = gl.getActiveUniform(program, index)
-      if (uniform) uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name)
+      if (uniform) {
+        uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name)
+      }
     }
 
     const buffer = gl.createBuffer()
@@ -416,8 +429,15 @@ export function MetallicPaint({ imageSrc, className = '' }: MetallicPaintProps) 
         )
         const uniforms = uniformsRef.current
         gl.uniform1i(uniforms.u_tex, 0)
-        gl.uniform1f(uniforms.u_imgRatio, textureData.width / textureData.height)
-        gl.uniform2f(uniforms.u_texel, 1 / textureData.width, 1 / textureData.height)
+        gl.uniform1f(
+          uniforms.u_imgRatio,
+          textureData.width / textureData.height
+        )
+        gl.uniform2f(
+          uniforms.u_texel,
+          1 / textureData.width,
+          1 / textureData.height
+        )
         textureRef.current = texture
         setTextureReady(true)
       } catch {
@@ -457,7 +477,9 @@ export function MetallicPaint({ imageSrc, className = '' }: MetallicPaintProps) 
   useEffect(() => {
     const gl = glRef.current
     if (!gl || !initialized || !textureReady) return
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
     const draw = (timestamp: number) => {
       const elapsed = Math.min(timestamp - lastFrameRef.current, 64)
       lastFrameRef.current = timestamp

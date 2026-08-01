@@ -149,18 +149,19 @@ export function NavigationDock() {
     }
 
     frameRef.current = window.requestAnimationFrame(() => {
-      panel.querySelectorAll<HTMLElement>('.krulu-dock-item').forEach((item) => {
-        const rect = item.getBoundingClientRect()
-        const distance =
-          clientX === null
-            ? MAGNIFICATION_DISTANCE
-            : Math.abs(clientX - (rect.left + rect.width / 2))
-        const influence = Math.max(0, 1 - distance / MAGNIFICATION_DISTANCE)
-        const size =
-          BASE_ITEM_SIZE +
-          (MAGNIFIED_ITEM_SIZE - BASE_ITEM_SIZE) * influence
-        item.style.setProperty('--user-dock-size', `${size}px`)
-      })
+      panel
+        .querySelectorAll<HTMLElement>('.krulu-dock-item')
+        .forEach((item) => {
+          const rect = item.getBoundingClientRect()
+          const distance =
+            clientX === null
+              ? MAGNIFICATION_DISTANCE
+              : Math.abs(clientX - (rect.left + rect.width / 2))
+          const influence = Math.max(0, 1 - distance / MAGNIFICATION_DISTANCE)
+          const size =
+            BASE_ITEM_SIZE + (MAGNIFIED_ITEM_SIZE - BASE_ITEM_SIZE) * influence
+          item.style.setProperty('--user-dock-size', `${size}px`)
+        })
       frameRef.current = null
     })
   }, [])
@@ -254,7 +255,10 @@ export function NavigationDock() {
               }
               onMouseLeave={() => setTooltip(null)}
               onFocusCapture={(event) =>
-                showTooltip(event.currentTarget as HTMLElement, t('Notifications'))
+                showTooltip(
+                  event.currentTarget as HTMLElement,
+                  t('Notifications')
+                )
               }
               onBlurCapture={() => setTooltip(null)}
             >

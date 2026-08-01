@@ -96,7 +96,9 @@ export function resolveLegacyRoute(rawHref: string): string | null {
   if (pathname === '/console/chat') {
     return buildTargetHref('/dashboard', source)
   }
-  if (pathname.startsWith('/console/chat/')) return buildTargetHref('/dashboard', source)
+  if (pathname.startsWith('/console/chat/')) {
+    return buildTargetHref('/dashboard', source)
+  }
 
   const target = legacyConsoleRoutes[pathname]
   if (target) return buildTargetHref(target, source)

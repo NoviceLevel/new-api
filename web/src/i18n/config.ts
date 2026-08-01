@@ -63,7 +63,8 @@ i18n
 
 const syncDocumentLanguage = (language?: string) => {
   if (typeof document === 'undefined') return
-  document.documentElement.lang = toIntlLocale(language ?? i18n.language) ?? 'en'
+  document.documentElement.lang =
+    toIntlLocale(language ?? i18n.language) ?? 'en'
 }
 
 i18n.on('languageChanged', syncDocumentLanguage)

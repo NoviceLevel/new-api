@@ -16,8 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import type { TopNavLink } from '../types'
 import { cn } from '@/lib/utils'
+
+import type { TopNavLink } from '../types'
 import { NavigationDock } from './navigation-dock'
 import { PublicHeader, type PublicHeaderProps } from './public-header'
 

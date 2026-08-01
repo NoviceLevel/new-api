@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { type ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -43,7 +43,8 @@ function DeletionCountdown({ eligibleAt }: { eligibleAt?: number }) {
   const days = Math.floor(seconds / 86400)
   const hours = Math.floor((seconds % 86400) / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  const remaining = days > 0 ? `${days}天 ${hours}小时` : `${hours}小时 ${minutes}分`
+  const remaining =
+    days > 0 ? `${days}天 ${hours}小时` : `${hours}小时 ${minutes}分`
   return <span>删除倒计时：{remaining}</span>
 }
 

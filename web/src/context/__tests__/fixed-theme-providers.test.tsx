@@ -32,10 +32,8 @@ for (const key of ['window', 'document', 'navigator', 'HTMLElement'] as const) {
 
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const {
-  ThemeCustomizationProvider,
-  useThemeCustomization,
-} = await import('../theme-customization-provider')
+const { ThemeCustomizationProvider, useThemeCustomization } =
+  await import('../theme-customization-provider')
 const { ThemeProvider, useTheme } = await import('../theme-provider')
 const { getCookie } = await import('@/lib/cookies')
 const { DEFAULT_THEME_CUSTOMIZATION, THEME_COOKIE_KEYS } =

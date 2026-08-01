@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 /* Final Krulu presentation, sourced from the approved local release. */
 :root,
 :root [data-theme-preset] {
@@ -54,7 +72,12 @@ body {
       oklch(0.73 0 0 / 24%) 0 8%,
       transparent 40%
     ),
-    linear-gradient(135deg, oklch(0.91 0 0), oklch(0.99 0 0) 48%, oklch(0.84 0 0));
+    linear-gradient(
+      135deg,
+      oklch(0.91 0 0),
+      oklch(0.99 0 0) 48%,
+      oklch(0.84 0 0)
+    );
   background-attachment: fixed;
 }
 
@@ -262,8 +285,9 @@ body {
   --home-card-ink: #f7f7f7;
   --home-card-muted: #8f8f8f;
   --home-success: #63d883;
-  --home-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', monospace;
+  --home-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    monospace;
   position: relative;
   display: grid;
   align-items: center;
@@ -271,12 +295,23 @@ body {
   padding: 7rem 4rem 9rem;
   overflow: hidden;
   color: var(--home-ink);
-  font-family: 'Public Sans Variable', 'PingFang SC', 'Microsoft YaHei',
+  font-family:
+    'Public Sans Variable', 'PingFang SC', 'Microsoft YaHei',
     'Noto Sans CJK SC', sans-serif;
   background:
-    radial-gradient(circle at 12% 18%, #fffffffa 0, #ffffffad 22%, transparent 52%)
+    radial-gradient(
+        circle at 12% 18%,
+        #fffffffa 0,
+        #ffffffad 22%,
+        transparent 52%
+      )
       0 0 / 145% 145%,
-    radial-gradient(circle at 86% 72%, #c3c3c0a3 0, #e2e2df6b 32%, transparent 62%)
+    radial-gradient(
+        circle at 86% 72%,
+        #c3c3c0a3 0,
+        #e2e2df6b 32%,
+        transparent 62%
+      )
       0 0 / 145% 145%,
     linear-gradient(128deg, #fdfdfd 0%, #d8d8d6 46%, #f8f8f8 100%) 0 0 / 175%
       175%;
@@ -648,7 +683,8 @@ body {
 }
 
 .krulu-connection-success strong {
-  font-family: 'Public Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family:
+    'Public Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-size: clamp(1rem, 1.8vw, 1.35rem);
   font-weight: 520;
 }
@@ -664,10 +700,16 @@ body {
 
 @keyframes krulu-home-gradient {
   from {
-    background-position: 0 10%, 100% 90%, 0%;
+    background-position:
+      0 10%,
+      100% 90%,
+      0%;
   }
   to {
-    background-position: 18% 30%, 78% 66%, 100%;
+    background-position:
+      18% 30%,
+      78% 66%,
+      100%;
   }
 }
 

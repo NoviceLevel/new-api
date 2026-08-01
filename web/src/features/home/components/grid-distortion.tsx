@@ -187,7 +187,14 @@ export function GridDistortion({
       const y = 1 - (e.clientY - rect.top) / rect.height
       if (x < 0 || x > 1 || y < 0 || y > 1) {
         // Same reset the upstream mouseleave handler performs.
-        Object.assign(mouseState, { x: 0, y: 0, prevX: 0, prevY: 0, vX: 0, vY: 0 })
+        Object.assign(mouseState, {
+          x: 0,
+          y: 0,
+          prevX: 0,
+          prevY: 0,
+          vX: 0,
+          vY: 0,
+        })
         return
       }
       mouseState.vX = x - mouseState.prevX
@@ -245,7 +252,15 @@ export function GridDistortion({
         container.removeChild(renderer.domElement)
       }
     }
-  }, [grid, mouse, strength, relaxation, imageSrc, mobileImageSrc, revealDelayMs])
+  }, [
+    grid,
+    mouse,
+    strength,
+    relaxation,
+    imageSrc,
+    mobileImageSrc,
+    revealDelayMs,
+  ])
 
   return (
     <div

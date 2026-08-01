@@ -22,7 +22,7 @@ import type {
   ApiResponse,
   PlanRecord,
   PlanPayload,
-	PlanDeletionResult,
+  PlanDeletionResult,
   UserSubscriptionRecord,
   CreateUserSubscriptionRequest,
   ResetUserSubscriptionsRequest,

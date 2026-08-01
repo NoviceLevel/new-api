@@ -52,6 +52,7 @@ import {
 } from '@/components/ui/sheet'
 import { getCurrencyDisplay, getCurrencyLabel } from '@/lib/currency'
 import { formatQuota, parseQuotaFromDollars } from '@/lib/format'
+import { handleServerError } from '@/lib/handle-server-error'
 import { addTimeToDate } from '@/lib/time'
 
 import { createRedemption, updateRedemption, getRedemption } from '../api'
@@ -63,7 +64,7 @@ import {
   transformFormDataToPayload,
   transformRedemptionToFormDefaults,
 } from '../lib'
-import { type Redemption } from '../types'
+import type { Redemption } from '../types'
 import { useRedemptions } from './redemptions-provider'
 
 type RedemptionsMutateDrawerProps = {
@@ -89,16 +90,28 @@ export function RedemptionsMutateDrawer({
 
   // Load existing data when updating
   useEffect(() => {
+    let active = true
+
     if (open && isUpdate && currentRow) {
-      // For update, fetch fresh data
-      getRedemption(currentRow.id).then((result) => {
-        if (result.success && result.data) {
-          form.reset(transformRedemptionToFormDefaults(result.data))
+      const loadRedemption = async () => {
+        try {
+          const result = await getRedemption(currentRow.id)
+          if (active && result.success && result.data) {
+            form.reset(transformRedemptionToFormDefaults(result.data))
+          }
+        } catch (error) {
+          if (active) {
+            handleServerError(error)
+          }
         }
-      })
+      }
+      void loadRedemption()
     } else if (open && !isUpdate) {
-      // For create, reset to defaults
       form.reset(REDEMPTION_FORM_DEFAULT_VALUES)
+    }
+
+    return () => {
+      active = false
     }
   }, [open, isUpdate, currentRow, form])
 
@@ -226,7 +239,7 @@ export function RedemptionsMutateDrawer({
                         step={tokensOnly ? 1 : 0.01}
                         placeholder={quotaPlaceholder}
                         onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value) || 0)
+                          field.onChange(Number.parseFloat(e.target.value) || 0)
                         }
                       />
                     </FormControl>
@@ -314,7 +327,9 @@ export function RedemptionsMutateDrawer({
                           max='100'
                           placeholder={t('Number of codes to create')}
                           onChange={(e) =>
-                            field.onChange(parseInt(e.target.value, 10) || 1)
+                            field.onChange(
+                              Number.parseInt(e.target.value, 10) || 1
+                            )
                           }
                         />
                       </FormControl>

@@ -84,9 +84,7 @@ export function ThemeCustomizationProvider(props: {
   const [preset, _setPreset] = useState<ThemePreset>(
     DEFAULT_THEME_CUSTOMIZATION.preset
   )
-  const [font, _setFont] = useState<ThemeFont>(
-    DEFAULT_THEME_CUSTOMIZATION.font
-  )
+  const [font, _setFont] = useState<ThemeFont>(DEFAULT_THEME_CUSTOMIZATION.font)
   const [radius, _setRadius] = useState<ThemeRadius>(
     DEFAULT_THEME_CUSTOMIZATION.radius
   )

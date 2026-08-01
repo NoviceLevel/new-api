@@ -48,7 +48,9 @@ export function DeletePlanDialog() {
       }
       toast.error(res.message || t('Operation failed'))
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('Operation failed'))
+      toast.error(
+        error instanceof Error ? error.message : t('Operation failed')
+      )
     } finally {
       setLoading(false)
     }
