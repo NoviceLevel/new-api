@@ -9,6 +9,7 @@ License, or (at your option) any later version.
 import { useEffect, useState } from 'react'
 
 import { useStatus } from '@/hooks/use-status'
+import { useSystemConfig } from '@/hooks/use-system-config'
 
 const CARD_COUNT = 3
 
@@ -96,8 +97,7 @@ function ConnectionCard() {
 }
 
 export function KruluCardHome() {
-  const { status } = useStatus()
-  const systemName = (status?.system_name as string | undefined) || ''
+  const { logo, systemName } = useSystemConfig()
   const [order, setOrder] = useState([0, 1, 2])
   const [dropping, setDropping] = useState(false)
 
@@ -121,7 +121,7 @@ export function KruluCardHome() {
 
   const cards = [
     <div className='krulu-grok-card' key='grok'>
-      <img src='/grok-mark.png' alt='Grok' />
+      <img src={logo} alt={systemName} />
     </div>,
     <div
       className='krulu-terminal-card'

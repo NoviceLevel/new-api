@@ -24,6 +24,7 @@ import { PublicHeader, type PublicHeaderProps } from './public-header'
 
 type PublicLayoutProps = {
   children: React.ReactNode
+  showHeader?: boolean
   showMainContainer?: boolean
   navContent?: React.ReactNode
   headerProps?: Omit<PublicHeaderProps, 'navContent'>
@@ -43,19 +44,26 @@ export function PublicLayout(props: PublicLayoutProps) {
         props.className
       )}
     >
-      <PublicHeader
-        navContent={props.navContent}
-        navLinks={props.navLinks}
-        showAuthButtons={props.showAuthButtons}
-        showNotifications={props.showNotifications}
-        logo={props.logo}
-        siteName={props.siteName}
-        {...props.headerProps}
-      />
+      {props.showHeader !== false && (
+        <PublicHeader
+          navContent={props.navContent}
+          navLinks={props.navLinks}
+          showAuthButtons={props.showAuthButtons}
+          showNotifications={props.showNotifications}
+          logo={props.logo}
+          siteName={props.siteName}
+          {...props.headerProps}
+        />
+      )}
       <NavigationDock />
 
       {props.showMainContainer !== false ? (
-        <main className='container px-4 py-6 pt-20 md:px-4'>
+        <main
+          className={cn(
+            'container px-4 py-6 md:px-4',
+            props.showHeader !== false && 'pt-20'
+          )}
+        >
           {props.children}
         </main>
       ) : (
