@@ -56,7 +56,7 @@ export function Home() {
 
   if (!isLoaded) {
     return (
-      <PublicLayout showHeader={false} showMainContainer={false}>
+      <PublicLayout showMainContainer={false}>
         <main className='dark min-h-svh bg-[#05080a] text-white'>
           <span className='sr-only'>{t('Loading...')}</span>
         </main>
@@ -67,7 +67,7 @@ export function Home() {
   if (content) {
     if (isUrl) {
       return (
-        <PublicLayout showHeader={false} showMainContainer={false}>
+        <PublicLayout showMainContainer={false}>
           {/*
             allow-top-navigation-by-user-activation: the custom home page URL is
             admin-configured (trusted); this lets its target="_top" nav/menu links
@@ -92,7 +92,7 @@ export function Home() {
 
     if (contentIsHtml) {
       return (
-        <PublicLayout showHeader={false} showMainContainer={false}>
+        <PublicLayout showMainContainer={false}>
           <RichContent
             mode='html'
             htmlVariant='isolated'
@@ -104,7 +104,7 @@ export function Home() {
     }
 
     return (
-      <PublicLayout showHeader={false}>
+      <PublicLayout>
         <div className='mx-auto max-w-6xl px-4 py-8'>
           <RichContent
             mode='markdown'
@@ -118,7 +118,6 @@ export function Home() {
 
   return (
     <PublicLayout
-      showHeader={false}
       showMainContainer={false}
       className='[--background:oklch(0.985_0_0)] [--border:oklch(0.82_0_0)] [--foreground:oklch(0.08_0_0)]'
     >

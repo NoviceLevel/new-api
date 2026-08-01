@@ -18,21 +18,11 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { cn } from '@/lib/utils'
 
-import type { TopNavLink } from '../types'
 import { NavigationDock } from './navigation-dock'
-import { PublicHeader, type PublicHeaderProps } from './public-header'
 
 type PublicLayoutProps = {
   children: React.ReactNode
-  showHeader?: boolean
   showMainContainer?: boolean
-  navContent?: React.ReactNode
-  headerProps?: Omit<PublicHeaderProps, 'navContent'>
-  navLinks?: TopNavLink[]
-  showAuthButtons?: boolean
-  showNotifications?: boolean
-  logo?: React.ReactNode
-  siteName?: string
   className?: string
 }
 
@@ -44,28 +34,10 @@ export function PublicLayout(props: PublicLayoutProps) {
         props.className
       )}
     >
-      {props.showHeader === true && (
-        <PublicHeader
-          navContent={props.navContent}
-          navLinks={props.navLinks}
-          showAuthButtons={props.showAuthButtons}
-          showNotifications={props.showNotifications}
-          logo={props.logo}
-          siteName={props.siteName}
-          {...props.headerProps}
-        />
-      )}
       <NavigationDock />
 
       {props.showMainContainer !== false ? (
-        <main
-          className={cn(
-            'container px-4 py-6 md:px-4',
-            props.showHeader === true && 'pt-20'
-          )}
-        >
-          {props.children}
-        </main>
+        <main className='container px-4 py-6 md:px-4'>{props.children}</main>
       ) : (
         props.children
       )}
