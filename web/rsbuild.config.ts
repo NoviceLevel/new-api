@@ -60,6 +60,15 @@ export default defineConfig(({ envMode }) => {
           chunks: 'all',
           enforce: true,
         },
+        // three.js and the react-three stack are only reachable from the
+        // lazily loaded check-in lanyard, so keep them out of the shared
+        // vendor chunks.
+        'vendor-three': {
+          test: /node_modules[\\/](three|meshline|@react-three|@dimforge)[\\/]/,
+          name: 'vendor-three',
+          chunks: 'async',
+          enforce: true,
+        },
       },
     },
     source: {
@@ -94,6 +103,9 @@ export default defineConfig(({ envMode }) => {
     },
     tools: {
       rspack: {
+        module: {
+          rules: [{ test: /\.glb$/, type: 'asset/resource' }],
+        },
         plugins: [
           tanstackRouter({
             target: 'react',

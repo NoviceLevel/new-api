@@ -27,7 +27,7 @@ const domGlobals = [
   'document',
   'navigator',
   'HTMLElement',
-  'HTMLCanvasElement',
+  'HTMLButtonElement',
   'KeyboardEvent',
   'Node',
   'Element',
@@ -39,25 +39,6 @@ for (const key of domGlobals) {
     value: domWindow[key],
   })
 }
-
-const canvasContext = {
-  createLinearGradient: () => ({ addColorStop: () => undefined }),
-  setTransform: () => undefined,
-  fillRect: () => undefined,
-  fillText: () => undefined,
-  beginPath: () => undefined,
-  arc: () => undefined,
-  fill: () => undefined,
-  moveTo: () => undefined,
-  lineTo: () => undefined,
-  stroke: () => undefined,
-  getImageData: () => ({ data: new Uint8ClampedArray() }),
-}
-
-Object.defineProperty(domWindow.HTMLCanvasElement.prototype, 'getContext', {
-  configurable: true,
-  value: () => canvasContext,
-})
 
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
@@ -75,8 +56,6 @@ await i18next.use(initReactI18next).init({
         'Check-in Rewards': 'Check-in Rewards',
         'Checked in': 'Checked in',
         'Daily Check-in': 'Daily Check-in',
-        "Today's gift": "Today's gift",
-        'Scratch to reveal your gift': 'Scratch to reveal your gift',
         'Rewards will be added directly to your balance':
           'Rewards will be added directly to your balance',
       },
@@ -89,7 +68,7 @@ const reactTestGlobals = globalThis as typeof globalThis & {
 }
 reactTestGlobals.IS_REACT_ACT_ENVIRONMENT = true
 
-async function renderCard(onScratch: () => Promise<boolean>) {
+async function renderCard(onCheckin: () => Promise<boolean>) {
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
@@ -100,14 +79,14 @@ async function renderCard(onScratch: () => Promise<boolean>) {
         prizeName='+10'
         checkedIn={false}
         checkingIn={false}
-        onScratch={onScratch}
+        onCheckin={onCheckin}
       />
     )
   })
   return { container, root }
 }
 
-describe('GiftCard daily check-in interaction', () => {
+describe('GiftCard lanyard check-in interaction', () => {
   after(() => domWindow.close())
 
   test('reveals the reward after keyboard check-in succeeds', async () => {
@@ -116,37 +95,41 @@ describe('GiftCard daily check-in interaction', () => {
       calls += 1
       return true
     })
-    const canvas = rendered.container.querySelector('canvas')
+    const button = rendered.container.querySelector<HTMLButtonElement>(
+      '.gift-lanyard__action'
+    )
 
-    assert.ok(canvas)
+    assert.ok(button)
     await act(async () => {
-      canvas.dispatchEvent(
+      button.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
       )
     })
 
     assert.equal(calls, 1)
-    assert.equal(canvas.dataset.revealed, 'true')
-    assert.equal(canvas.tabIndex, -1)
+    assert.equal(button.dataset.complete, 'true')
+    assert.equal(button.disabled, true)
     assert.match(rendered.container.textContent || '', /\+10/)
 
     await act(async () => rendered.root.unmount())
     rendered.container.remove()
   })
 
-  test('keeps the scratch layer when check-in is rejected', async () => {
+  test('keeps the lanyard action available when check-in is rejected', async () => {
     const rendered = await renderCard(async () => false)
-    const canvas = rendered.container.querySelector('canvas')
+    const button = rendered.container.querySelector<HTMLButtonElement>(
+      '.gift-lanyard__action'
+    )
 
-    assert.ok(canvas)
+    assert.ok(button)
     await act(async () => {
-      canvas.dispatchEvent(
+      button.dispatchEvent(
         new KeyboardEvent('keydown', { key: ' ', bubbles: true })
       )
     })
 
-    assert.equal(canvas.dataset.revealed, 'false')
-    assert.equal(canvas.tabIndex, 0)
+    assert.equal(button.dataset.complete, 'false')
+    assert.equal(button.disabled, false)
 
     await act(async () => rendered.root.unmount())
     rendered.container.remove()

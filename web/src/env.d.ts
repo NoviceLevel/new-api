@@ -21,3 +21,8 @@ For commercial licensing, please contact support@quantumnous.com
 declare module '@visactor/react-vchart' {
   export const VChart: React.ComponentType<Record<string, unknown>>
 }
+
+declare module '*.glb' {
+  const src: string
+  export default src
+}

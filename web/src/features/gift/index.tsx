@@ -203,7 +203,7 @@ export function Gift() {
           }
           checkedIn={checkedIn}
           checkingIn={checkinMutation.isPending}
-          onScratch={() => checkIn()}
+          onCheckin={() => checkIn()}
         />
       </div>
     )
