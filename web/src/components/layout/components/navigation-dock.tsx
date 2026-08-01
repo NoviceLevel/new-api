@@ -122,7 +122,7 @@ export function NavigationDock() {
         const links = isDockLinkItem(item) ? [item] : item.items
         links.forEach((link) => {
           if (!link.url || !link.icon) return
-          const Icon = link.icon
+          const Icon = link.icon as React.ComponentType<{ className?: string }>
           items.push({
             key: String(link.url),
             title: link.title,

@@ -11,6 +11,8 @@ import { useEffect, useState } from 'react'
 import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
 
+import Shuffle from './shuffle-text'
+
 const CARD_COUNT = 3
 
 function TerminalCard() {
@@ -150,7 +152,18 @@ export function KruluCardHome() {
               <i className='krulu-copy-cursor' aria-hidden='true' />
             </span>
           </h1>
-          <p className='krulu-home-tagline'>{systemName}</p>
+          <Shuffle
+            text={systemName}
+            className='krulu-home-tagline'
+            tag='p'
+            textAlign='left'
+            shuffleDirection='right'
+            duration={0.42}
+            shuffleTimes={2}
+            stagger={0.045}
+            scrambleCharset='0123456789'
+            triggerOnHover
+          />
         </div>
 
         <div className='krulu-card-stage'>

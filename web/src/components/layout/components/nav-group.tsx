@@ -115,14 +115,15 @@ function NavBadge({ children }: { children: ReactNode }) {
  */
 function SidebarMenuLink({ item, href }: { item: NavLink; href: string }) {
   const { setOpenMobile } = useSidebar()
+  const Icon = item.icon as React.ComponentType<{ className?: string }>
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         isActive={checkIsActive(href, item)}
         tooltip={item.title}
-        render={<Link to={item.url} onClick={() => setOpenMobile(false)} />}
+        render={<Link to={item.url as any} onClick={() => setOpenMobile(false)} />}
       >
-        {item.icon && <item.icon className='shrink-0' />}
+        {Icon && <Icon className='shrink-0' />}
         <span className='min-w-0 flex-1 truncate'>{item.title}</span>
         {item.badge && <NavBadge>{item.badge}</NavBadge>}
       </SidebarMenuButton>
@@ -154,6 +155,8 @@ function SidebarMenuCollapsible({
     }
   }, [isSubItemActive])
 
+  const Icon = item.icon as React.ComponentType<{ className?: string }>
+
   return (
     <Collapsible
       open={isOpen}
@@ -165,27 +168,30 @@ function SidebarMenuCollapsible({
         className='group/collapsible-trigger'
         render={<SidebarMenuButton tooltip={item.title} />}
       >
-        {item.icon && <item.icon className='shrink-0' />}
+        {Icon && <Icon className='shrink-0' />}
         <span className='min-w-0 flex-1 truncate'>{item.title}</span>
         {item.badge && <NavBadge>{item.badge}</NavBadge>}
         <ChevronRight className='ms-auto size-4 shrink-0 transition-transform duration-200 group-data-[panel-open]/collapsible-trigger:rotate-90' />
       </CollapsibleTrigger>
       <CollapsibleContent className='CollapsibleContent'>
         <SidebarMenuSub>
-          {item.items.map((subItem) => (
-            <SidebarMenuSubItem key={subItem.title}>
-              <SidebarMenuSubButton
-                isActive={checkIsActive(href, subItem)}
-                render={
-                  <Link to={subItem.url} onClick={() => setOpenMobile(false)} />
-                }
-              >
-                {subItem.icon && <subItem.icon className='shrink-0' />}
-                <span className='min-w-0 flex-1 truncate'>{subItem.title}</span>
-                {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
-          ))}
+          {item.items.map((subItem) => {
+            const SubItemIcon = subItem.icon as React.ComponentType<{ className?: string }>
+            return (
+              <SidebarMenuSubItem key={subItem.title}>
+                <SidebarMenuSubButton
+                  isActive={checkIsActive(href, subItem)}
+                  render={
+                    <Link to={subItem.url as any} onClick={() => setOpenMobile(false)} />
+                  }
+                >
+                  {SubItemIcon && <SubItemIcon className='shrink-0' />}
+                  <span className='min-w-0 flex-1 truncate'>{subItem.title}</span>
+                  {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            )
+          })}
         </SidebarMenuSub>
       </CollapsibleContent>
     </Collapsible>
@@ -202,6 +208,7 @@ function SidebarMenuCollapsedDropdown({
   item: NavCollapsible
   href: string
 }) {
+  const Icon = item.icon as React.ComponentType<{ className?: string }>
   return (
     <SidebarMenuItem>
       <DropdownMenu>
@@ -214,7 +221,7 @@ function SidebarMenuCollapsedDropdown({
             />
           }
         >
-          {item.icon && <item.icon className='shrink-0' />}
+          {Icon && <Icon className='shrink-0' />}
           <span className='min-w-0 flex-1 truncate'>{item.title}</span>
           {item.badge && <NavBadge>{item.badge}</NavBadge>}
           <ChevronRight className='ms-auto size-4 shrink-0 transition-transform duration-200 group-data-[popup-open]/dropdown-trigger:rotate-90' />
@@ -225,23 +232,26 @@ function SidebarMenuCollapsedDropdown({
               {item.title} {item.badge ? `(${item.badge})` : ''}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {item.items.map((sub) => (
-              <DropdownMenuItem
-                key={`${sub.title}-${sub.url}`}
-                render={
-                  <Link
-                    to={sub.url}
-                    className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
-                  />
-                }
-              >
-                {sub.icon && <sub.icon />}
-                <span className='max-w-52 text-wrap'>{sub.title}</span>
-                {sub.badge && (
-                  <span className='ms-auto text-xs'>{sub.badge}</span>
-                )}
-              </DropdownMenuItem>
-            ))}
+            {item.items.map((sub) => {
+              const SubIcon = sub.icon as React.ComponentType<{ className?: string }>
+              return (
+                <DropdownMenuItem
+                  key={`${sub.title}-${sub.url}`}
+                  render={
+                    <Link
+                      to={sub.url as any}
+                      className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
+                    />
+                  }
+                >
+                  {SubIcon && <SubIcon />}
+                  <span className='max-w-52 text-wrap'>{sub.title}</span>
+                  {sub.badge && (
+                    <span className='ms-auto text-xs'>{sub.badge}</span>
+                  )}
+                </DropdownMenuItem>
+              )
+            })}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

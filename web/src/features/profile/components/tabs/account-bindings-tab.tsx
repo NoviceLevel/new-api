@@ -413,6 +413,7 @@ export function AccountBindingsTab({
             actionLabel = t('Bound')
           }
 
+          const BindingIcon = binding.icon as React.ComponentType<{ className?: string }>
           return (
             <div
               key={binding.id}
@@ -420,7 +421,7 @@ export function AccountBindingsTab({
             >
               <div className='flex min-w-0 items-center gap-2.5 sm:gap-3'>
                 <div className='bg-muted shrink-0 rounded-md p-1.5 sm:p-2'>
-                  <binding.icon className='h-4 w-4' />
+                  <BindingIcon className='h-4 w-4' />
                 </div>
                 <div className='min-w-0'>
                   <div className='flex items-center gap-1.5'>
