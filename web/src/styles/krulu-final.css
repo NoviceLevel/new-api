@@ -93,10 +93,6 @@ body {
     ) !important;
 }
 
-.krulu-auth-shell .krulu-auth-brand-logo {
-  filter: none !important;
-}
-
 .krulu-auth-shell {
   color: var(--foreground) !important;
   color-scheme: light !important;
