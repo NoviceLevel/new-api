@@ -115,6 +115,12 @@ export function NavigationDock() {
         href: '/',
         icon: <Home />,
       },
+      {
+        key: 'pricing',
+        title: t('Model Square'),
+        href: '/pricing',
+        icon: <Boxes />,
+      },
     ]
 
     navGroups.forEach((group) => {
