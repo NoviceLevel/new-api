@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { CheckCircle2, Gift as GiftIcon, Sparkles, Ticket } from 'lucide-react'
+import { CheckCircle2, Gift as GiftIcon } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -211,46 +211,43 @@ export function GiftCard(props: GiftCardProps) {
   return (
     <article className='gift-scratch-card'>
       <header className='gift-scratch-card__header'>
-        <div className='gift-scratch-card__topline'>
-          <div className='gift-scratch-card__brand'>
-            <span className='gift-scratch-card__brand-mark' aria-hidden='true'>
-              <GiftIcon />
-            </span>
-            <span>{props.systemName}</span>
+        <div className='gift-scratch-card__brand'>
+          <span className='gift-scratch-card__brand-mark' aria-hidden='true'>
+            <GiftIcon />
+          </span>
+          <div className='gift-scratch-card__brand-copy'>
+            <strong>{props.systemName}</strong>
+            <span>{t('Check-in Rewards')}</span>
           </div>
-          <time>{todayLabel}</time>
         </div>
-        <div className='gift-scratch-card__title-row'>
-          <div>
-            <h3>{t('Daily Check-in')}</h3>
-            <p>{t('Check in daily to receive random quota rewards')}</p>
-          </div>
-          <div
+        <div className='gift-scratch-card__meta'>
+          <time>{todayLabel}</time>
+          <span
             className='gift-scratch-card__status'
             data-complete={revealed}
             aria-live='polite'
           >
-            {revealed ? (
-              <CheckCircle2 aria-hidden='true' />
-            ) : (
-              <Sparkles aria-hidden='true' />
-            )}
-            <span>{revealed ? t('Checked in') : t('Check in now')}</span>
-          </div>
+            <span
+              className='gift-scratch-card__status-dot'
+              aria-hidden='true'
+            />
+            {revealed ? t('Checked in') : t('Check in now')}
+          </span>
         </div>
       </header>
 
       <div className='gift-scratch-card__scratch-area'>
-        <div className='gift-scratch-card__ticket-label'>
-          <Ticket aria-hidden='true' />
-          <span>{t("Today's gift")}</span>
-        </div>
         <div className='gift-scratch-card__prize'>
           <span className='gift-scratch-card__prize-icon' aria-hidden='true'>
             <GiftIcon />
           </span>
-          <span>{t('Check-in Rewards')}</span>
+          <span className='gift-scratch-card__prize-label'>
+            {t('Daily Check-in')}
+          </span>
           <strong>{props.prizeName || t('A daily surprise')}</strong>
+          <span className='gift-scratch-card__prize-caption'>
+            {t('Rewards will be added directly to your balance')}
+          </span>
         </div>
         <canvas
           ref={canvasRef}
@@ -270,14 +267,13 @@ export function GiftCard(props: GiftCardProps) {
         />
       </div>
 
-      <footer className='gift-scratch-card__footer'>
-        <Sparkles aria-hidden='true' />
-        <div>
-          <strong>
-            {revealed ? t('Checked in') : t('Scratch to reveal your gift')}
-          </strong>
-          <span>{t('Rewards will be added directly to your balance')}</span>
-        </div>
+      <footer className='gift-scratch-card__footer' aria-live='polite'>
+        <span className='gift-scratch-card__footer-icon' aria-hidden='true'>
+          {revealed ? <CheckCircle2 /> : <GiftIcon />}
+        </span>
+        <span>
+          {revealed ? t('Checked in') : t('Scratch to reveal your gift')}
+        </span>
       </footer>
     </article>
   )

@@ -2,9 +2,9 @@
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,8 +18,8 @@ For commercial licensing, please contact support@quantumnous.com
 */
 .gift-stage {
   display: flex;
-  min-height: min(560px, calc(100vh - 10rem));
-  align-items: flex-start;
+  min-height: min(620px, calc(100vh - 9rem));
+  align-items: center;
   justify-content: center;
   padding: 1rem 0 7rem;
 }
@@ -28,157 +28,148 @@ For commercial licensing, please contact support@quantumnous.com
   --gift-accent: oklch(0.61 0.12 166);
   --gift-accent-soft: color-mix(
     in oklch,
-    var(--gift-accent) 11%,
+    var(--gift-accent) 10%,
     var(--background)
   );
-  --gift-accent-faint: color-mix(in oklch, var(--gift-accent) 4%, var(--card));
+  --gift-accent-faint: color-mix(
+    in oklch,
+    var(--gift-accent) 4%,
+    var(--background)
+  );
   position: relative;
-  width: min(100%, 620px);
+  width: min(100%, 560px);
   overflow: hidden;
-  border: 1px solid color-mix(in oklch, var(--gift-accent) 22%, var(--border));
-  border-radius: 16px;
+  border: 1px solid color-mix(in oklch, var(--gift-accent) 24%, var(--border));
+  border-radius: 24px;
   background: var(--gift-accent-faint);
   color: var(--foreground);
-  box-shadow: 0 12px 30px rgb(0 0 0 / 6%);
+  box-shadow:
+    0 24px 50px rgb(15 23 42 / 8%),
+    0 2px 8px rgb(15 23 42 / 5%);
 }
 
 .gift-scratch-card::before {
   position: absolute;
   z-index: 4;
   inset: 0 0 auto;
-  height: 3px;
-  background: var(--gift-accent);
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--gift-accent) 62%, var(--background)),
+    var(--gift-accent),
+    color-mix(in oklch, var(--gift-accent) 62%, var(--background))
+  );
   content: '';
 }
 
 .gift-scratch-card__header {
-  border-bottom: 1px dashed
-    color-mix(in oklch, var(--gift-accent) 24%, var(--border));
-  padding: 1.625rem 1.5rem 1.25rem;
-}
-
-.gift-scratch-card__topline,
-.gift-scratch-card__title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding: 1.375rem 1.5rem 1rem;
 }
 
 .gift-scratch-card__brand {
   display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
   min-width: 0;
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-  font-weight: 650;
-}
-
-.gift-scratch-card__brand > span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .gift-scratch-card__brand-mark {
   display: inline-flex;
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   border: 1px solid color-mix(in oklch, var(--gift-accent) 30%, var(--border));
-  border-radius: 9px;
+  border-radius: 50%;
   background: var(--gift-accent-soft);
   color: var(--gift-accent);
 }
 
 .gift-scratch-card__brand-mark svg {
-  width: 1rem;
-  height: 1rem;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
-.gift-scratch-card__topline time {
+.gift-scratch-card__brand-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.gift-scratch-card__brand-copy strong {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gift-scratch-card__brand-copy span {
+  color: var(--muted-foreground);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gift-scratch-card__meta {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.gift-scratch-card__meta time {
   color: var(--muted-foreground);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 
-.gift-scratch-card__title-row {
-  align-items: flex-end;
-  margin-top: 1.25rem;
-}
-
-.gift-scratch-card__title-row h3 {
-  margin: 0 0 0.375rem;
-  font-size: clamp(1.55rem, 4vw, 2rem);
-  font-weight: 650;
-  line-height: 1.1;
-}
-
-.gift-scratch-card__title-row p {
-  margin: 0;
-  color: var(--muted-foreground);
-  font-size: 0.8125rem;
-  line-height: 1.6;
-}
-
 .gift-scratch-card__status {
   display: inline-flex;
-  flex: 0 0 auto;
   align-items: center;
   gap: 0.375rem;
-  border: 1px solid color-mix(in oklch, var(--gift-accent) 25%, var(--border));
-  border-radius: 999px;
-  background: var(--background);
-  padding: 0.4375rem 0.625rem;
-  color: color-mix(in oklch, var(--gift-accent) 70%, var(--foreground));
+  color: color-mix(in oklch, var(--gift-accent) 72%, var(--foreground));
   font-size: 0.6875rem;
   font-weight: 650;
   white-space: nowrap;
 }
 
-.gift-scratch-card__status svg {
-  width: 0.875rem;
-  height: 0.875rem;
+.gift-scratch-card__status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--gift-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--gift-accent) 14%, transparent);
 }
 
 .gift-scratch-card__status[data-complete='true'] {
-  border-color: color-mix(in oklch, var(--gift-accent) 40%, var(--border));
   color: var(--gift-accent);
+}
+
+.gift-scratch-card__status[data-complete='true']
+  .gift-scratch-card__status-dot {
+  background: var(--gift-accent);
 }
 
 .gift-scratch-card__scratch-area {
   position: relative;
-  height: 230px;
+  height: 270px;
   margin: 0 1.5rem;
   overflow: hidden;
-  border: 1px solid color-mix(in oklch, var(--gift-accent) 26%, var(--border));
-  border-radius: 12px;
+  border: 1px solid color-mix(in oklch, var(--gift-accent) 28%, var(--border));
+  border-radius: 20px;
   background: var(--gift-accent-soft);
-  box-shadow: inset 0 0 0 3px
+  box-shadow: inset 0 0 0 4px
     color-mix(in oklch, var(--gift-accent) 4%, transparent);
-}
-
-.gift-scratch-card__ticket-label {
-  position: absolute;
-  z-index: 3;
-  top: 0.875rem;
-  left: 1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: color-mix(in oklch, var(--gift-accent) 65%, var(--foreground));
-  font-size: 0.6875rem;
-  font-weight: 650;
-  pointer-events: none;
-}
-
-.gift-scratch-card__ticket-label svg {
-  width: 0.875rem;
-  height: 0.875rem;
 }
 
 .gift-scratch-card__prize {
@@ -188,46 +179,87 @@ For commercial licensing, please contact support@quantumnous.com
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   background: var(--gift-accent-soft);
   padding: 1.5rem;
   text-align: center;
 }
 
+.gift-scratch-card__prize::before,
+.gift-scratch-card__prize::after {
+  position: absolute;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid color-mix(in oklch, var(--gift-accent) 12%, transparent);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.gift-scratch-card__prize::before {
+  top: -9rem;
+  left: -7rem;
+}
+
+.gift-scratch-card__prize::after {
+  right: -7rem;
+  bottom: -10rem;
+}
+
 .gift-scratch-card__prize-icon {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.75rem;
-  border: 1px solid color-mix(in oklch, var(--gift-accent) 30%, var(--border));
-  border-radius: 12px;
-  background: color-mix(in oklch, var(--gift-accent) 12%, var(--background));
+  margin-bottom: 0.875rem;
+  border: 1px solid color-mix(in oklch, var(--gift-accent) 32%, var(--border));
+  border-radius: 18px;
+  background: color-mix(in oklch, var(--gift-accent) 13%, var(--background));
   color: var(--gift-accent);
 }
 
 .gift-scratch-card__prize-icon svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
-.gift-scratch-card__prize > span {
-  margin-bottom: 0.625rem;
-  color: var(--muted-foreground);
+.gift-scratch-card__prize-label,
+.gift-scratch-card__prize-caption {
+  position: relative;
+  z-index: 1;
+}
+
+.gift-scratch-card__prize-label {
+  margin-bottom: 0.375rem;
+  color: color-mix(in oklch, var(--gift-accent) 68%, var(--foreground));
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .gift-scratch-card__prize > strong {
+  position: relative;
+  z-index: 1;
   max-width: 100%;
   overflow: hidden;
   color: var(--foreground);
-  font-size: clamp(1.35rem, 4vw, 1.8rem);
-  font-weight: 700;
+  font-size: clamp(2rem, 7vw, 2.875rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.gift-scratch-card__prize-caption {
+  margin-top: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
 }
 
 .gift-scratch-card__canvas {
@@ -237,9 +269,13 @@ For commercial licensing, please contact support@quantumnous.com
   display: block;
   width: 100%;
   height: 100%;
-  cursor: crosshair;
+  cursor: grab;
   touch-action: none;
-  transition: opacity 450ms ease;
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gift-scratch-card__canvas:active {
+  cursor: grabbing;
 }
 
 .gift-scratch-card__canvas[data-busy='true'] {
@@ -258,79 +294,68 @@ For commercial licensing, please contact support@quantumnous.com
 
 .gift-scratch-card__footer {
   display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  margin: 1rem 1.5rem 1.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 1.5rem;
   border-top: 1px solid
-    color-mix(in oklch, var(--gift-accent) 16%, var(--border));
-  padding-top: 1rem;
+    color-mix(in oklch, var(--gift-accent) 15%, var(--border));
+  padding: 0.875rem 0.125rem 1.125rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
-.gift-scratch-card__footer > svg {
-  width: 1rem;
-  height: 1rem;
+.gift-scratch-card__footer-icon {
+  display: inline-flex;
   flex: 0 0 auto;
-  margin-top: 0.125rem;
   color: var(--gift-accent);
 }
 
-.gift-scratch-card__footer > div {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.gift-scratch-card__footer strong,
-.gift-scratch-card__footer span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gift-scratch-card__footer strong {
-  font-size: 0.75rem;
-  font-weight: 650;
-}
-
-.gift-scratch-card__footer span {
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-  line-height: 1.6;
+.gift-scratch-card__footer-icon svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 @media (max-width: 640px) {
   .gift-stage {
     min-height: 0;
+    align-items: flex-start;
     padding-top: 0.25rem;
   }
 
   .gift-scratch-card {
-    border-radius: 13px;
+    border-radius: 20px;
   }
 
   .gift-scratch-card__header {
-    padding: 1.25rem 1.125rem 1rem;
+    padding: 1.125rem 1.125rem 0.875rem;
   }
 
-  .gift-scratch-card__title-row {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.875rem;
-    margin-top: 1rem;
-  }
-
-  .gift-scratch-card__status {
-    align-self: flex-start;
+  .gift-scratch-card__brand-mark {
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   .gift-scratch-card__scratch-area {
-    height: 190px;
+    height: 220px;
     margin: 0 1.125rem;
+    border-radius: 17px;
+  }
+
+  .gift-scratch-card__prize {
+    padding: 1.25rem;
+  }
+
+  .gift-scratch-card__prize-icon {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.75rem;
+    border-radius: 15px;
   }
 
   .gift-scratch-card__footer {
-    margin: 0.875rem 1.125rem 1.25rem;
-    padding-top: 0.875rem;
+    margin: 0 1.125rem;
+    padding: 0.75rem 0.125rem 1rem;
   }
 }
 
