@@ -65,17 +65,25 @@ export function GiftCard(props: GiftCardProps) {
 
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     context.globalCompositeOperation = 'source-over'
-    context.fillStyle = '#e6e8ec'
+    context.fillStyle = '#e5efec'
     context.fillRect(0, 0, bounds.width, bounds.height)
-    context.fillStyle = 'rgba(39, 39, 42, 0.05)'
+    context.fillStyle = 'rgba(43, 109, 95, 0.07)'
     for (let x = 0; x < bounds.width; x += 5) {
       for (let y = 0; y < bounds.height; y += 5) {
         if ((x + y) % 15 === 0) context.fillRect(x, y, 2, 2)
       }
     }
+    context.strokeStyle = 'rgba(43, 109, 95, 0.035)'
+    context.lineWidth = 1
+    for (let x = -bounds.height; x < bounds.width; x += 18) {
+      context.beginPath()
+      context.moveTo(x, 0)
+      context.lineTo(x + bounds.height, bounds.height)
+      context.stroke()
+    }
     context.font =
       '500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-    context.fillStyle = '#71717a'
+    context.fillStyle = '#47776e'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
     context.fillText(
@@ -238,6 +246,9 @@ export function GiftCard(props: GiftCardProps) {
           <span>{t("Today's gift")}</span>
         </div>
         <div className='gift-scratch-card__prize'>
+          <span className='gift-scratch-card__prize-icon' aria-hidden='true'>
+            <GiftIcon />
+          </span>
           <span>{t('Check-in Rewards')}</span>
           <strong>{props.prizeName || t('A daily surprise')}</strong>
         </div>
