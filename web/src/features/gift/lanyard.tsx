@@ -29,12 +29,7 @@ For commercial licensing, please contact support@quantumnous.com
 // oxlint-disable react/no-unknown-property
 // oxlint-disable typescript/no-non-null-assertion
 
-import {
-  useGLTF,
-  useTexture,
-  Environment,
-  Lightformer,
-} from '@react-three/drei'
+import { useGLTF, Environment, Lightformer } from '@react-three/drei'
 import {
   Canvas,
   extend,
@@ -61,7 +56,6 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 import cardModel from './assets/card.glb'
-import lanyardTexture from './assets/lanyard.png'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 
@@ -201,8 +195,6 @@ function Band(props: BandProps) {
   }
 
   const { nodes, materials } = useGLTF(cardModel) as unknown as CardGltf
-  const strapTexture = useTexture(lanyardTexture)
-  strapTexture.wrapS = strapTexture.wrapT = THREE.RepeatWrapping
 
   // `MeshLineMaterial` needs its resolution at construction time, so it goes
   // through `args` rather than as a prop.
@@ -430,11 +422,9 @@ function Band(props: BandProps) {
         <meshLineGeometry />
         <meshLineMaterial
           args={strapMaterialArgs}
-          color='white'
+          color='#111111'
           depthTest={false}
-          useMap={1}
-          map={strapTexture}
-          repeat={[-4, 1]}
+          useMap={0}
           lineWidth={1}
         />
       </mesh>
