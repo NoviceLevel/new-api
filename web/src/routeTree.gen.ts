@@ -49,6 +49,7 @@ import { Route as AuthenticatedChannelsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardSectionRouteImport } from './routes/_authenticated/dashboard/$section'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedGiftIndexRouteImport } from './routes/_authenticated/gift/index'
 import { Route as AuthenticatedKeysIndexRouteImport } from './routes/_authenticated/keys/index'
 import { Route as AuthenticatedModelHealthIndexRouteImport } from './routes/_authenticated/model-health/index'
 import { Route as AuthenticatedModelsIndexRouteImport } from './routes/_authenticated/models/index'
@@ -281,6 +282,11 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGiftIndexRoute = AuthenticatedGiftIndexRouteImport.update({
+  id: '/gift/',
+  path: '/gift/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedKeysIndexRoute = AuthenticatedKeysIndexRouteImport.update({
   id: '/keys/',
   path: '/keys/',
@@ -488,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/usage-logs/$section': typeof AuthenticatedUsageLogsSectionRoute
   '/channels/': typeof AuthenticatedChannelsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/gift/': typeof AuthenticatedGiftIndexRoute
   '/keys/': typeof AuthenticatedKeysIndexRoute
   '/model-health/': typeof AuthenticatedModelHealthIndexRoute
   '/models/': typeof AuthenticatedModelsIndexRoute
@@ -555,6 +562,7 @@ export interface FileRoutesByTo {
   '/usage-logs/$section': typeof AuthenticatedUsageLogsSectionRoute
   '/channels': typeof AuthenticatedChannelsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/gift': typeof AuthenticatedGiftIndexRoute
   '/keys': typeof AuthenticatedKeysIndexRoute
   '/model-health': typeof AuthenticatedModelHealthIndexRoute
   '/models': typeof AuthenticatedModelsIndexRoute
@@ -626,6 +634,7 @@ export interface FileRoutesById {
   '/_authenticated/usage-logs/$section': typeof AuthenticatedUsageLogsSectionRoute
   '/_authenticated/channels/': typeof AuthenticatedChannelsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/gift/': typeof AuthenticatedGiftIndexRoute
   '/_authenticated/keys/': typeof AuthenticatedKeysIndexRoute
   '/_authenticated/model-health/': typeof AuthenticatedModelHealthIndexRoute
   '/_authenticated/models/': typeof AuthenticatedModelsIndexRoute
@@ -696,6 +705,7 @@ export interface FileRouteTypes {
     | '/usage-logs/$section'
     | '/channels/'
     | '/dashboard/'
+    | '/gift/'
     | '/keys/'
     | '/model-health/'
     | '/models/'
@@ -763,6 +773,7 @@ export interface FileRouteTypes {
     | '/usage-logs/$section'
     | '/channels'
     | '/dashboard'
+    | '/gift'
     | '/keys'
     | '/model-health'
     | '/models'
@@ -833,6 +844,7 @@ export interface FileRouteTypes {
     | '/_authenticated/usage-logs/$section'
     | '/_authenticated/channels/'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/gift/'
     | '/_authenticated/keys/'
     | '/_authenticated/model-health/'
     | '/_authenticated/models/'
@@ -1174,6 +1186,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/gift/': {
+      id: '/_authenticated/gift/'
+      path: '/gift'
+      fullPath: '/gift/'
+      preLoaderRoute: typeof AuthenticatedGiftIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/keys/': {
       id: '/_authenticated/keys/'
       path: '/keys'
@@ -1464,6 +1483,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUsageLogsSectionRoute: typeof AuthenticatedUsageLogsSectionRoute
   AuthenticatedChannelsIndexRoute: typeof AuthenticatedChannelsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedGiftIndexRoute: typeof AuthenticatedGiftIndexRoute
   AuthenticatedKeysIndexRoute: typeof AuthenticatedKeysIndexRoute
   AuthenticatedModelHealthIndexRoute: typeof AuthenticatedModelHealthIndexRoute
   AuthenticatedModelsIndexRoute: typeof AuthenticatedModelsIndexRoute
@@ -1485,6 +1505,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUsageLogsSectionRoute: AuthenticatedUsageLogsSectionRoute,
   AuthenticatedChannelsIndexRoute: AuthenticatedChannelsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedGiftIndexRoute: AuthenticatedGiftIndexRoute,
   AuthenticatedKeysIndexRoute: AuthenticatedKeysIndexRoute,
   AuthenticatedModelHealthIndexRoute: AuthenticatedModelHealthIndexRoute,
   AuthenticatedModelsIndexRoute: AuthenticatedModelsIndexRoute,
