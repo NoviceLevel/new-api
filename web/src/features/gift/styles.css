@@ -26,7 +26,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 .gift-lanyard {
   display: flex;
-  width: min(100%, 820px);
+  width: 100%;
   flex-direction: column;
   align-items: center;
 }
@@ -37,10 +37,6 @@ For commercial licensing, please contact support@quantumnous.com
   height: 620px;
   overflow: hidden;
   touch-action: none;
-}
-
-.gift-lanyard[data-pull-state='armed'] .gift-lanyard__scene {
-  filter: saturate(1.08);
 }
 
 .gift-lanyard__scene canvas {
