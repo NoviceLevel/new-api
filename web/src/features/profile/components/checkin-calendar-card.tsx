@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import {
   CalendarDays,
   ChevronDown,
@@ -25,12 +26,9 @@ import {
   ChevronUp,
   Sparkles,
 } from 'lucide-react'
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 
-import { Dialog } from '@/components/dialog'
-import { Turnstile } from '@/components/turnstile'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { IconBadge } from '@/components/ui/icon-badge'
@@ -45,28 +43,19 @@ import { formatQuotaWithCurrency } from '@/lib/currency'
 import dayjs from '@/lib/dayjs'
 import { cn } from '@/lib/utils'
 
-import { getCheckinStatus, performCheckin } from '../api'
+import { getCheckinStatus } from '../api'
 import type { CheckinRecord } from '../types'
 
 interface CheckinCalendarCardProps {
   checkinEnabled: boolean
-  turnstileEnabled: boolean
-  turnstileSiteKey: string
 }
 
-export function CheckinCalendarCard({
-  checkinEnabled,
-  turnstileEnabled,
-  turnstileSiteKey,
-}: CheckinCalendarCardProps) {
+export function CheckinCalendarCard(props: CheckinCalendarCardProps) {
   const { t } = useTranslation()
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1)
   })
-  const [checkinLoading, setCheckinLoading] = useState(false)
-  const [turnstileModalVisible, setTurnstileModalVisible] = useState(false)
-  const [turnstileWidgetKey, setTurnstileWidgetKey] = useState(0)
   const [initialLoaded, setInitialLoaded] = useState(false)
   const [collapsed, setCollapsed] = useState<boolean>(false)
 
@@ -78,11 +67,7 @@ export function CheckinCalendarCard({
 
   // Fetch checkin status
   /* eslint-disable @tanstack/query/exhaustive-deps */
-  const {
-    data: checkinData,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data: checkinData, isLoading } = useQuery({
     queryKey: ['checkin-status', currentMonthStr],
     queryFn: async () => {
       const res = await getCheckinStatus(currentMonthStr)
@@ -91,7 +76,7 @@ export function CheckinCalendarCard({
       }
       throw new Error(res.message || t('Failed to fetch checkin status'))
     },
-    enabled: checkinEnabled,
+    enabled: props.checkinEnabled,
     staleTime: 30000,
   })
   /* eslint-enable @tanstack/query/exhaustive-deps */
@@ -128,49 +113,6 @@ export function CheckinCalendarCard({
     setCollapsed(checkedToday)
     setInitialLoaded(true)
   }, [checkinData, checkedToday, initialLoaded, isLoading])
-
-  const shouldTriggerTurnstile = useCallback(
-    (message?: string) => {
-      if (!turnstileEnabled) return false
-      if (typeof message !== 'string') return true
-      return message.includes('Turnstile')
-    },
-    [turnstileEnabled]
-  )
-
-  const doCheckin = useCallback(
-    async (token?: string) => {
-      setCheckinLoading(true)
-      try {
-        const res = await performCheckin(token)
-        if (res.success && res.data) {
-          toast.success(
-            `${t('Check-in successful! Received')} ${formatQuotaWithCurrency(res.data.quota_awarded)}`
-          )
-          refetch()
-          setTurnstileModalVisible(false)
-        } else {
-          if (!token && shouldTriggerTurnstile(res.message)) {
-            if (!turnstileSiteKey) {
-              toast.error(t('Turnstile is enabled but site key is empty.'))
-              return
-            }
-            setTurnstileModalVisible(true)
-            return
-          }
-          if (token && shouldTriggerTurnstile(res.message)) {
-            setTurnstileWidgetKey((v) => v + 1)
-          }
-          toast.error(res.message || t('Check-in failed'))
-        }
-      } catch {
-        toast.error(t('Check-in failed'))
-      } finally {
-        setCheckinLoading(false)
-      }
-    },
-    [refetch, shouldTriggerTurnstile, t, turnstileSiteKey]
-  )
 
   const handlePrevMonth = () => {
     setCurrentMonth(
@@ -219,7 +161,7 @@ export function CheckinCalendarCard({
 
   const weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
-  if (!checkinEnabled) {
+  if (!props.checkinEnabled) {
     return null
   }
 
@@ -242,45 +184,8 @@ export function CheckinCalendarCard({
     )
   }
 
-  let checkinButtonLabel = t('Check in now')
-  if (checkinLoading) {
-    checkinButtonLabel = t('Loading...')
-  } else if (checkedToday) {
-    checkinButtonLabel = t('Checked in')
-  }
-
   return (
     <TooltipProvider delay={100}>
-      <Dialog
-        open={turnstileModalVisible}
-        onOpenChange={(open) => {
-          setTurnstileModalVisible(open)
-          if (!open) {
-            setTurnstileWidgetKey((v) => v + 1)
-          }
-        }}
-        title={t('Security Check')}
-        contentClassName='sm:max-w-md'
-        contentHeight='auto'
-        bodyClassName='space-y-4'
-      >
-        <div className='text-muted-foreground text-sm'>
-          {t('Please complete the security check to continue.')}
-        </div>
-        <div className='flex justify-center py-4'>
-          <Turnstile
-            key={turnstileWidgetKey}
-            siteKey={turnstileSiteKey}
-            onVerify={(token) => {
-              doCheckin(token)
-            }}
-            onExpire={() => {
-              setTurnstileWidgetKey((v) => v + 1)
-            }}
-          />
-        </div>
-      </Dialog>
-
       <Card data-card-hover='false' className='gap-0 overflow-hidden py-0'>
         {/* Header */}
         <div className='border-b p-4 sm:p-6'>
@@ -323,12 +228,12 @@ export function CheckinCalendarCard({
               </div>
             </button>
             <Button
-              onClick={() => doCheckin()}
-              disabled={checkinLoading || checkedToday}
+              render={<Link to='/gift' />}
               size='sm'
+              variant='outline'
               className='w-full shrink-0 sm:w-auto'
             >
-              {checkinButtonLabel}
+              {checkedToday ? t('Checked in') : t('Check in now')}
             </Button>
           </div>
         </div>

@@ -93,7 +93,7 @@ export function useSidebarData(): SidebarData {
         title: t('Personal'),
         items: [
           {
-            title: t('Gift'),
+            title: t('Daily Check-in'),
             url: '/gift',
             icon: Gift,
           },

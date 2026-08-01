@@ -18,23 +18,31 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, Gift as GiftIcon, RefreshCw } from 'lucide-react'
-import { useEffect, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import { Dialog } from '@/components/dialog'
 import { SectionPageLayout } from '@/components/layout'
+import { Turnstile } from '@/components/turnstile'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getCheckinStatus, performCheckin } from '@/features/profile/api'
+import type { CheckinStatusResponse } from '@/features/profile/types'
+import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
+import { formatQuotaWithCurrency } from '@/lib/currency'
 
-import { getDailyGift, redeemDailyGift, scratchDailyGift } from './api'
 import { GiftCard } from './gift-card'
-import type { DailyGift } from './types'
 
 import './styles.css'
-
-const giftQueryKey = ['daily-gift'] as const
 
 function GiftEmptyState({ message }: { message: string }) {
   return (
@@ -48,69 +56,133 @@ function GiftEmptyState({ message }: { message: string }) {
 export function Gift() {
   const { t } = useTranslation()
   const { systemName } = useSystemConfig()
+  const { status, loading: statusLoading } = useStatus()
   const queryClient = useQueryClient()
+  const [today, setToday] = useState(() => new Date())
+  const [turnstileModalVisible, setTurnstileModalVisible] = useState(false)
+  const [turnstileWidgetKey, setTurnstileWidgetKey] = useState(0)
+  const todayString = useMemo(
+    () =>
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
+    [today]
+  )
+  const currentMonth = todayString.slice(0, 7)
+  const checkinEnabled = status?.checkin_enabled === true
+  const turnstileEnabled = !!(
+    status?.turnstile_check && status?.turnstile_site_key
+  )
+  const turnstileSiteKey = status?.turnstile_site_key || ''
+  const checkinQueryKey = useMemo(
+    () => ['checkin-status', currentMonth] as const,
+    [currentMonth]
+  )
   const query = useQuery({
-    queryKey: giftQueryKey,
-    queryFn: getDailyGift,
+    queryKey: checkinQueryKey,
+    queryFn: async () => {
+      const response = await getCheckinStatus(currentMonth)
+      if (response.success && response.data) return response.data
+      throw new Error(response.message || t('Failed to fetch checkin status'))
+    },
+    enabled: checkinEnabled,
     staleTime: 30_000,
   })
-  const gift = query.data
+  const checkinData = query.data
+  const todayAward = checkinData?.stats.records.find(
+    (record) => record.checkin_date === todayString
+  )?.quota_awarded
+  const checkedIn = checkinData?.stats.checked_in_today === true
 
   useEffect(() => {
-    if (!gift?.expires_at) return
-    const delay = Math.min(
-      Math.max(gift.expires_at * 1000 - Date.now(), 0),
-      2_147_483_647
+    const nextDay = new Date(today)
+    nextDay.setHours(24, 0, 0, 0)
+    const timer = window.setTimeout(
+      () => setToday(new Date()),
+      Math.max(nextDay.getTime() - Date.now(), 1_000)
     )
-    const timer = window.setTimeout(() => query.refetch(), delay)
     return () => window.clearTimeout(timer)
-  }, [gift?.expires_at, query])
+  }, [today])
 
-  const updateGift = (nextGift: DailyGift) => {
-    queryClient.setQueryData(giftQueryKey, nextGift)
-  }
-
-  const scratchMutation = useMutation({
-    mutationFn: scratchDailyGift,
-    onSuccess: updateGift,
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : t('Unable to scratch the card')
-      )
-    },
+  const checkinMutation = useMutation({
+    mutationFn: (token?: string) => performCheckin(token),
   })
 
-  const redeemMutation = useMutation({
-    mutationFn: redeemDailyGift,
-    onSuccess: (nextGift) => {
-      updateGift(nextGift)
-      toast.success(
-        t('{{plan}} is now active', {
-          plan: nextGift.prize.name || t('Subscription'),
-        })
-      )
+  const checkIn = useCallback(
+    async (token?: string) => {
+      try {
+        const response = await checkinMutation.mutateAsync(token)
+        if (response.success && response.data) {
+          const reward = response.data.quota_awarded
+          queryClient.setQueryData<CheckinStatusResponse>(
+            checkinQueryKey,
+            (current) => {
+              if (!current) return current
+              const records = current.stats.records.filter(
+                (record) => record.checkin_date !== todayString
+              )
+              return {
+                ...current,
+                stats: {
+                  ...current.stats,
+                  checked_in_today: true,
+                  total_checkins: current.stats.total_checkins + 1,
+                  total_quota: current.stats.total_quota + reward,
+                  checkin_count: current.stats.checkin_count + 1,
+                  records: [
+                    { checkin_date: todayString, quota_awarded: reward },
+                    ...records,
+                  ],
+                },
+              }
+            }
+          )
+          setTurnstileModalVisible(false)
+          toast.success(
+            `${t('Check-in successful! Received')} ${formatQuotaWithCurrency(reward)}`
+          )
+          return true
+        }
+
+        const message = response.message || t('Check-in failed')
+        if (!token && turnstileEnabled && message.includes('Turnstile')) {
+          setTurnstileModalVisible(true)
+          return false
+        }
+        if (token && turnstileEnabled && message.includes('Turnstile')) {
+          setTurnstileWidgetKey((value) => value + 1)
+        }
+        toast.error(message)
+        return false
+      } catch {
+        toast.error(t('Check-in failed'))
+        return false
+      }
     },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Unable to activate the gift')
-      )
-    },
-  })
+    [
+      checkinMutation,
+      checkinQueryKey,
+      queryClient,
+      t,
+      todayString,
+      turnstileEnabled,
+    ]
+  )
 
   let content: ReactNode
-  if (query.isLoading) {
+  if (statusLoading || (checkinEnabled && query.isLoading)) {
     content = (
       <div className='gift-stage'>
         <Skeleton className='h-[500px] w-full max-w-[720px] rounded-lg' />
       </div>
     )
-  } else if (query.isError || !gift) {
+  } else if (!checkinEnabled) {
+    content = (
+      <GiftEmptyState message={t('Daily check-in is currently unavailable')} />
+    )
+  } else if (query.isError || !checkinData) {
     content = (
       <Alert variant='destructive'>
         <AlertCircle />
-        <AlertTitle>{t("Unable to load today's gift")}</AlertTitle>
+        <AlertTitle>{t('Failed to fetch checkin status')}</AlertTitle>
         <AlertDescription>
           {query.error instanceof Error
             ? query.error.message
@@ -118,49 +190,69 @@ export function Gift() {
         </AlertDescription>
       </Alert>
     )
-  } else if (!gift.configured) {
-    content = <GiftEmptyState message={t('No gift plan is available')} />
-  } else if (!gift.enabled && !gift.scratched) {
-    content = (
-      <GiftEmptyState message={t('Daily gift is currently unavailable')} />
-    )
   } else {
     content = (
       <div className='gift-stage'>
         <GiftCard
+          key={todayString}
           systemName={systemName}
-          prizeName={gift.prize.name}
-          scratched={gift.scratched}
-          redeemed={gift.redeemed}
-          scratching={scratchMutation.isPending}
-          redeeming={redeemMutation.isPending}
-          onScratch={async () => {
-            await scratchMutation.mutateAsync()
-          }}
-          onRedeem={() => redeemMutation.mutate()}
+          prizeName={
+            todayAward === undefined
+              ? ''
+              : `+${formatQuotaWithCurrency(todayAward)}`
+          }
+          checkedIn={checkedIn}
+          checkingIn={checkinMutation.isPending}
+          onScratch={() => checkIn()}
         />
       </div>
     )
   }
 
   return (
-    <SectionPageLayout>
-      <SectionPageLayout.Title>{t('Gift')}</SectionPageLayout.Title>
-      <SectionPageLayout.Actions>
-        <Button
-          type='button'
-          size='sm'
-          variant='outline'
-          disabled={query.isFetching}
-          onClick={() => query.refetch()}
-        >
-          <RefreshCw
-            className={query.isFetching ? 'animate-spin' : undefined}
+    <>
+      <Dialog
+        open={turnstileModalVisible}
+        onOpenChange={(open) => {
+          setTurnstileModalVisible(open)
+          if (!open) setTurnstileWidgetKey((value) => value + 1)
+        }}
+        title={t('Security Check')}
+        contentClassName='sm:max-w-md'
+        contentHeight='auto'
+        bodyClassName='space-y-4'
+      >
+        <div className='text-muted-foreground text-sm'>
+          {t('Please complete the security check to continue.')}
+        </div>
+        <div className='flex justify-center py-4'>
+          <Turnstile
+            key={turnstileWidgetKey}
+            siteKey={turnstileSiteKey}
+            onVerify={(token) => void checkIn(token)}
+            onExpire={() => setTurnstileWidgetKey((value) => value + 1)}
           />
-          {t('Refresh')}
-        </Button>
-      </SectionPageLayout.Actions>
-      <SectionPageLayout.Content>{content}</SectionPageLayout.Content>
-    </SectionPageLayout>
+        </div>
+      </Dialog>
+
+      <SectionPageLayout>
+        <SectionPageLayout.Title>{t('Daily Check-in')}</SectionPageLayout.Title>
+        <SectionPageLayout.Actions>
+          <Button
+            type='button'
+            size='sm'
+            variant='outline'
+            disabled={!checkinEnabled || query.isFetching}
+            onClick={() => query.refetch()}
+          >
+            <RefreshCw
+              className={query.isFetching ? 'animate-spin' : undefined}
+            />
+            {t('Refresh')}
+          </Button>
+        </SectionPageLayout.Actions>
+        <SectionPageLayout.Content>{content}</SectionPageLayout.Content>
+      </SectionPageLayout>
+    </>
   )
 }

@@ -29,37 +29,23 @@ import { useTranslation } from 'react-i18next'
 type GiftCardProps = {
   systemName: string
   prizeName: string
-  scratched: boolean
-  redeemed: boolean
-  scratching: boolean
-  redeeming: boolean
-  onScratch: () => Promise<void>
-  onRedeem: () => void
+  checkedIn: boolean
+  checkingIn: boolean
+  onScratch: () => Promise<boolean>
 }
 
 type Point = { x: number; y: number }
 
 const REVEAL_THRESHOLD = 0.45
 
-export function GiftCard({
-  systemName,
-  prizeName,
-  scratched,
-  redeemed,
-  scratching,
-  redeeming,
-  onScratch,
-  onRedeem,
-}: GiftCardProps) {
+export function GiftCard(props: GiftCardProps) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawingRef = useRef(false)
   const scratchRequestRef = useRef(false)
   const startedLocallyRef = useRef(false)
   const previousPointRef = useRef<Point | null>(null)
-  const revealTimerRef = useRef<number | null>(null)
-  const [revealed, setRevealed] = useState(scratched)
-  const [showAction, setShowAction] = useState(scratched)
+  const [revealed, setRevealed] = useState(props.checkedIn)
 
   const initializeCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -91,11 +77,7 @@ export function GiftCard({
     context.fillStyle = '#71717a'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.fillText(
-      t('Scratch to reveal your gift'),
-      bounds.width / 2,
-      bounds.height / 2
-    )
+    context.fillText(t('Check in now'), bounds.width / 2, bounds.height / 2)
     context.globalCompositeOperation = 'destination-out'
     context.lineJoin = 'round'
     context.lineCap = 'round'
@@ -103,11 +85,10 @@ export function GiftCard({
   }, [revealed, t])
 
   useEffect(() => {
-    if (scratched && !startedLocallyRef.current) {
+    if (props.checkedIn && !startedLocallyRef.current) {
       setRevealed(true)
-      setShowAction(true)
     }
-  }, [scratched])
+  }, [props.checkedIn])
 
   useEffect(() => {
     initializeCanvas()
@@ -118,29 +99,21 @@ export function GiftCard({
     return () => observer.disconnect()
   }, [initializeCanvas])
 
-  useEffect(
-    () => () => {
-      if (revealTimerRef.current !== null) {
-        window.clearTimeout(revealTimerRef.current)
-      }
-    },
-    []
-  )
-
   const ensureScratched = useCallback(async () => {
-    if (scratched || scratchRequestRef.current) return scratched
+    if (props.checkedIn || scratchRequestRef.current) return props.checkedIn
     scratchRequestRef.current = true
     startedLocallyRef.current = true
     try {
-      await onScratch()
-      return true
+      const checkedIn = await props.onScratch()
+      if (!checkedIn) startedLocallyRef.current = false
+      return checkedIn
     } catch {
       startedLocallyRef.current = false
       return false
     } finally {
       scratchRequestRef.current = false
     }
-  }, [onScratch, scratched])
+  }, [props])
 
   const pointFromEvent = (event: PointerEvent<HTMLCanvasElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect()
@@ -175,10 +148,6 @@ export function GiftCard({
     if (sampled === 0 || transparent / sampled < REVEAL_THRESHOLD) return
 
     setRevealed(true)
-    revealTimerRef.current = window.setTimeout(() => {
-      setShowAction(true)
-      revealTimerRef.current = null
-    }, 450)
   }
 
   const handlePointerDown = async (event: PointerEvent<HTMLCanvasElement>) => {
@@ -197,7 +166,7 @@ export function GiftCard({
   }
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (!drawingRef.current || scratching || revealed) return
+    if (!drawingRef.current || props.checkingIn || revealed) return
     event.preventDefault()
     const point = pointFromEvent(event)
     const previous = previousPointRef.current
@@ -218,45 +187,31 @@ export function GiftCard({
     event.preventDefault()
     if (await ensureScratched()) {
       setRevealed(true)
-      setShowAction(true)
     }
   }
-
-  let actionLabel = t('Activate gift')
-  if (redeemed) actionLabel = t('Activated')
-  else if (redeeming) actionLabel = t('Activating...')
 
   return (
     <article className='gift-scratch-card'>
       <header className='gift-scratch-card__header'>
-        <span className='gift-scratch-card__brand'>{systemName}</span>
-        <h3>{t("Today's gift")}</h3>
-        <p>{t('A little surprise, every day')}</p>
+        <span className='gift-scratch-card__brand'>{props.systemName}</span>
+        <h3>{t('Daily Check-in')}</h3>
+        <p>{t('Check in daily to receive random quota rewards')}</p>
       </header>
 
       <div className='gift-scratch-card__scratch-area'>
         <div className='gift-scratch-card__prize'>
-          <span>{t('Daily subscription')}</span>
-          <strong>{prizeName || t('A daily surprise')}</strong>
-          <button
-            type='button'
-            className='gift-scratch-card__activate'
-            data-visible={showAction}
-            disabled={!showAction || redeemed || redeeming}
-            onClick={onRedeem}
-          >
-            {actionLabel}
-          </button>
+          <span>{t('Check-in Rewards')}</span>
+          <strong>{props.prizeName || t('A daily surprise')}</strong>
         </div>
         <canvas
           ref={canvasRef}
           role='button'
           tabIndex={revealed ? -1 : 0}
-          aria-label={t('Scratch the daily gift card')}
-          aria-busy={scratching}
+          aria-label={t('Check in now')}
+          aria-busy={props.checkingIn}
           className='gift-scratch-card__canvas'
           data-revealed={revealed}
-          data-busy={scratching}
+          data-busy={props.checkingIn}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={revealIfComplete}
@@ -268,12 +223,7 @@ export function GiftCard({
 
       <footer className='gift-scratch-card__footer'>
         <div className='gift-scratch-card__barcode' aria-hidden='true' />
-        <p>
-          {t(
-            '{{system}} reserves the final interpretation of this event. The gift takes effect immediately after activation.',
-            { system: systemName }
-          )}
-        </p>
+        <p>{t('Rewards will be added directly to your balance')}</p>
       </footer>
     </article>
   )

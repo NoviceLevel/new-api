@@ -117,34 +117,6 @@ For commercial licensing, please contact support@quantumnous.com
   white-space: nowrap;
 }
 
-.gift-scratch-card__activate {
-  min-height: 2.25rem;
-  margin-top: 1rem;
-  border: 0;
-  border-radius: 5px;
-  background: var(--foreground);
-  color: var(--background);
-  cursor: pointer;
-  opacity: 0;
-  padding: 0.4rem 1rem;
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: opacity 240ms ease;
-}
-
-.gift-scratch-card__activate[data-visible='true'] {
-  opacity: 1;
-}
-
-.gift-scratch-card__activate:disabled {
-  cursor: default;
-}
-
-.gift-scratch-card__activate:hover:not(:disabled) {
-  opacity: 0.82;
-}
-
 .gift-scratch-card__canvas {
   position: absolute;
   z-index: 2;
@@ -220,7 +192,6 @@ For commercial licensing, please contact support@quantumnous.com
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gift-scratch-card__activate,
   .gift-scratch-card__canvas {
     transition: none;
   }
