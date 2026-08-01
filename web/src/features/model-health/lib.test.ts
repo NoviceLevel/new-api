@@ -19,7 +19,11 @@ For commercial licensing, please contact support@quantumnous.com
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { getHealthTone, summarizeModelHealth } from './lib'
+import {
+  getHealthTone,
+  summarizeFleetHealth,
+  summarizeModelHealth,
+} from './lib'
 
 describe('model health presentation', () => {
   test('aggregates request totals and success rate across hourly buckets', () => {
@@ -52,5 +56,45 @@ describe('model health presentation', () => {
     assert.equal(getHealthTone(10, 99), 'healthy')
     assert.equal(getHealthTone(10, 95), 'degraded')
     assert.equal(getHealthTone(10, 94.9), 'unhealthy')
+  })
+
+  test('summarizes active models and weighted fleet reliability', () => {
+    const summary = summarizeFleetHealth([
+      {
+        model_name: 'active-model',
+        channel_id: 1,
+        buckets: [
+          {
+            hour: 1,
+            total_count: 100,
+            success_count: 98,
+            probe_count: 0,
+            success_rate: 98,
+          },
+        ],
+      },
+      {
+        model_name: 'idle-model',
+        channel_id: 2,
+        buckets: [
+          {
+            hour: 1,
+            total_count: 0,
+            success_count: 0,
+            probe_count: 0,
+            success_rate: 0,
+          },
+        ],
+      },
+    ])
+
+    assert.deepEqual(summary, {
+      totalModels: 2,
+      activeModels: 1,
+      totalCount: 100,
+      successCount: 98,
+      successRate: 98,
+      tone: 'degraded',
+    })
   })
 })

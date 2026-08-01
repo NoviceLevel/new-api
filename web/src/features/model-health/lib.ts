@@ -16,9 +16,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import type { ModelHealthBucket } from './types'
+import type { ModelHealthBucket, ModelHealthModel } from './types'
 
 export type HealthTone = 'idle' | 'healthy' | 'degraded' | 'unhealthy'
+
+export type FleetHealthSummary = {
+  totalModels: number
+  activeModels: number
+  totalCount: number
+  successCount: number
+  successRate: number
+  tone: HealthTone
+}
 
 export function summarizeModelHealth(buckets: ModelHealthBucket[]) {
   const totals = buckets.reduce(
@@ -46,4 +55,42 @@ export function getHealthTone(
   if (successRate >= 99) return 'healthy'
   if (successRate >= 95) return 'degraded'
   return 'unhealthy'
+}
+
+export function summarizeFleetHealth(
+  models: ModelHealthModel[]
+): FleetHealthSummary {
+  const totals = models.reduce(
+    (result, model) => {
+      const summary = summarizeModelHealth(model.buckets)
+      return {
+        activeModels: result.activeModels + (summary.totalCount > 0 ? 1 : 0),
+        totalCount: result.totalCount + summary.totalCount,
+        successCount: result.successCount + summary.successCount,
+      }
+    },
+    { activeModels: 0, totalCount: 0, successCount: 0 }
+  )
+  const successRate =
+    totals.totalCount === 0
+      ? 0
+      : (totals.successCount / totals.totalCount) * 100
+
+  return {
+    totalModels: models.length,
+    ...totals,
+    successRate,
+    tone: getHealthTone(totals.totalCount, successRate),
+  }
+}
+
+export function formatHealthHour(timestamp: number) {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    hour12: false,
+  }).format(new Date(timestamp * 1000))
+}
+
+export function formatHealthRate(rate: number) {
+  return `${rate.toFixed(rate >= 99.95 ? 0 : 1)}%`
 }
