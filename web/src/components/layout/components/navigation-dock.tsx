@@ -214,42 +214,44 @@ export function NavigationDock() {
         data-user-dock={isCommonUser ? '' : undefined}
         data-user-dock-guest={!user ? '' : undefined}
       >
-        <nav
-          ref={panelRef}
-          className='krulu-dock-panel'
-          aria-label={t('Primary navigation')}
-          onMouseMove={(event) => updateMagnification(event.clientX)}
-          onMouseLeave={() => {
-            updateMagnification(null)
-            setTooltip(null)
-          }}
-        >
-          {items.map(renderDockLink)}
+        <div className='krulu-dock-scroll'>
+          <nav
+            ref={panelRef}
+            className='krulu-dock-panel'
+            aria-label={t('Primary navigation')}
+            onMouseMove={(event) => updateMagnification(event.clientX)}
+            onMouseLeave={() => {
+              updateMagnification(null)
+              setTooltip(null)
+            }}
+          >
+            {items.map(renderDockLink)}
 
-          {isCommonUser && (
-            <div
-              className='krulu-dock-item'
-              onMouseEnter={(event) =>
-                showTooltip(event.currentTarget, t('Sign out'))
-              }
-              onFocusCapture={(event) =>
-                showTooltip(event.currentTarget as HTMLElement, t('Sign out'))
-              }
-              onBlurCapture={() => setTooltip(null)}
-            >
-              <button
-                type='button'
-                className='krulu-dock-link'
-                aria-label={t('Sign out')}
-                onClick={() => setSignOutOpen(true)}
+            {isCommonUser && (
+              <div
+                className='krulu-dock-item'
+                onMouseEnter={(event) =>
+                  showTooltip(event.currentTarget, t('Sign out'))
+                }
+                onFocusCapture={(event) =>
+                  showTooltip(event.currentTarget as HTMLElement, t('Sign out'))
+                }
+                onBlurCapture={() => setTooltip(null)}
               >
-                <span className='krulu-dock-icon' aria-hidden='true'>
-                  <LogOut />
-                </span>
-              </button>
-            </div>
-          )}
-        </nav>
+                <button
+                  type='button'
+                  className='krulu-dock-link'
+                  aria-label={t('Sign out')}
+                  onClick={() => setSignOutOpen(true)}
+                >
+                  <span className='krulu-dock-icon' aria-hidden='true'>
+                    <LogOut />
+                  </span>
+                </button>
+              </div>
+            )}
+          </nav>
+        </div>
 
         {isCommonUser && (
           <div className='krulu-dock-panel krulu-dock-panel-secondary'>
