@@ -63,6 +63,8 @@ import { getServerErrorMessageKey } from '@/lib/server-error-message'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
 
+import { PasswordLoginDisclosure } from './password-login-disclosure'
+
 export function UserAuthForm({
   className,
   redirectTo,
@@ -391,7 +393,7 @@ export function UserAuthForm({
         {hasAlternativeLogin && alternativeLoginMethods}
 
         {passwordLoginEnabled && (
-          <>
+          <PasswordLoginDisclosure collapsedByDefault={hasAlternativeLogin}>
             {/* Username Field */}
             <FormField
               control={form.control}
@@ -453,7 +455,7 @@ export function UserAuthForm({
                 />
               </div>
             )}
-          </>
+          </PasswordLoginDisclosure>
         )}
 
         <LegalConsent
