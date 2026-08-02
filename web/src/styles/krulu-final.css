@@ -820,6 +820,11 @@ body {
     overflow-y: hidden;
   }
 
+  .krulu-dock-outer:not([data-user-dock]) {
+    width: max-content;
+    max-width: calc(100vw - 1rem);
+  }
+
   .krulu-dock-scroll {
     flex: 1 1 auto;
     min-width: 0;
@@ -834,6 +839,12 @@ body {
     border-radius: 999px;
     background: color-mix(in oklch, var(--background) 82%, transparent);
     backdrop-filter: blur(18px) saturate(1.1);
+  }
+
+  .krulu-dock-outer:not([data-user-dock]) .krulu-dock-scroll {
+    flex: 0 1 auto;
+    width: max-content;
+    max-width: 100%;
   }
 
   .krulu-dock-scroll::-webkit-scrollbar {
