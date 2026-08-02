@@ -21,7 +21,7 @@ import axios from 'axios'
 import { api, refreshAuthentication, type RefreshOutcome } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
 
-import { getAffiliateCode } from './lib/storage'
+import { getAffiliateCode, getInvitationCode } from './lib/storage'
 import type { TelegramAuthorization } from './lib/telegram-login'
 import type {
   LoginPayload,
@@ -140,12 +140,22 @@ export async function githubOAuthStart(clientId: string, state: string) {
 // Get OAuth state for CSRF protection
 export async function createOAuthFlow(
   provider: string,
-  intent: 'login' | 'bind'
+  intent: 'login' | 'bind',
+  options?: { invitationCode?: string }
 ): Promise<string> {
   const aff = intent === 'login' ? getAffiliateCode() : ''
+  const invitationCode =
+    intent === 'login' && provider === 'linuxdo'
+      ? (options?.invitationCode ?? getInvitationCode()).trim()
+      : ''
   const res = await api.post(
     '/api/oauth/state',
-    { provider, intent, aff: aff || undefined },
+    {
+      provider,
+      intent,
+      aff: aff || undefined,
+      invitation_code: invitationCode || undefined,
+    },
     { skipAuthRefresh: intent === 'login' }
   )
   if (res.data?.success) {
@@ -182,7 +192,10 @@ export async function telegramLogin(
 
 // User registration
 export async function register(payload: RegisterPayload): Promise<ApiResponse> {
-  const res = await api.post(`/api/user/register`, payload, {
+  const endpoint = payload.invitation_code
+    ? '/api/user/invitation-register'
+    : '/api/user/register'
+  const res = await api.post(endpoint, payload, {
     params: { turnstile: payload.turnstile ?? '' },
   })
   return res.data

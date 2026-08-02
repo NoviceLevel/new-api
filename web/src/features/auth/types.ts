@@ -39,6 +39,7 @@ export interface RegisterPayload {
   email?: string
   verification_code?: string
   aff_code?: string
+  invitation_code?: string
   turnstile?: string
 }
 
@@ -105,6 +106,7 @@ export interface SystemStatus {
     oidc_client_id?: string
     linuxdo_oauth?: boolean
     linuxdo_client_id?: string
+    linuxdo_oauth_invitation_required?: boolean
     telegram_oauth?: boolean
     telegram_bot_name?: string
     passkey_login?: boolean
@@ -131,6 +133,7 @@ export interface SystemStatus {
     privacy_policy_enabled?: boolean
     oauth_register_enabled?: boolean
     register_enabled?: boolean
+    invitation_registration_enabled?: boolean
     password_login_enabled?: boolean
     password_register_enabled?: boolean
     custom_oauth_providers?: CustomOAuthProviderInfo[]
@@ -149,6 +152,7 @@ export interface SystemStatus {
   oidc_client_id?: string
   linuxdo_oauth?: boolean
   linuxdo_client_id?: string
+  linuxdo_oauth_invitation_required?: boolean
   telegram_oauth?: boolean
   telegram_bot_name?: string
   passkey_login?: boolean
@@ -175,6 +179,7 @@ export interface SystemStatus {
   privacy_policy_enabled?: boolean
   oauth_register_enabled?: boolean
   register_enabled?: boolean
+  invitation_registration_enabled?: boolean
   password_login_enabled?: boolean
   password_register_enabled?: boolean
   custom_oauth_providers?: CustomOAuthProviderInfo[]

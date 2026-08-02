@@ -30,7 +30,10 @@ import { useEffect } from 'react'
 import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeCustomizationProvider } from '@/context/theme-customization-provider'
-import { saveAffiliateCode } from '@/features/auth/lib/storage'
+import {
+  saveAffiliateCode,
+  saveInvitationCode,
+} from '@/features/auth/lib/storage'
 import { GeneralError } from '@/features/errors/general-error'
 import { NotFoundError } from '@/features/errors/not-found-error'
 import { getSetupStatus } from '@/features/setup/api'
@@ -52,9 +55,18 @@ function RootComponent() {
   useSystemConfig({ autoLoad: true })
 
   useEffect(() => {
-    const aff = new URLSearchParams(window.location.search).get('aff')?.trim()
+    const searchParams = new URLSearchParams(window.location.search)
+    const aff = searchParams.get('aff')?.trim()
     if (aff) {
       saveAffiliateCode(aff)
+    }
+    const invitationCode = (
+      searchParams.get('invitation_code') ||
+      searchParams.get('invite') ||
+      ''
+    ).trim()
+    if (invitationCode) {
+      saveInvitationCode(invitationCode)
     }
   }, [])
 

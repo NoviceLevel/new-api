@@ -88,9 +88,12 @@ func DeleteInvitation(c *gin.Context) {
 }
 
 type invitationRegisterRequest struct {
-	InvitationCode string `json:"invitation_code"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
+	InvitationCode   string `json:"invitation_code"`
+	Username         string `json:"username"`
+	Password         string `json:"password"`
+	Email            string `json:"email"`
+	AffCode          string `json:"aff_code"`
+	VerificationCode string `json:"verification_code"`
 }
 
 func InvitationRegister(c *gin.Context) {
@@ -104,6 +107,7 @@ func InvitationRegister(c *gin.Context) {
 		return
 	}
 	request.Username = strings.TrimSpace(request.Username)
+	request.Email = model.NormalizeEmail(request.Email)
 	request.InvitationCode = strings.TrimSpace(request.InvitationCode)
 	if request.Username == "" || request.Password == "" || request.InvitationCode == "" {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
@@ -123,9 +127,31 @@ func InvitationRegister(c *gin.Context) {
 		common.ApiErrorI18n(c, i18n.MsgUserExists)
 		return
 	}
-	cleanUser := model.User{Username: user.Username, Password: user.Password, DisplayName: user.Username, Role: common.RoleCommonUser}
+	if common.EmailVerificationEnabled {
+		if request.Email == "" || request.VerificationCode == "" {
+			common.ApiErrorI18n(c, i18n.MsgUserEmailVerificationRequired)
+			return
+		}
+		if !common.VerifyCodeWithKey(request.Email, request.VerificationCode, common.EmailVerificationPurpose) {
+			common.ApiErrorI18n(c, i18n.MsgUserVerificationCodeError)
+			return
+		}
+		if err := model.EnsureEmailAvailable(request.Email, 0); err != nil {
+			if errors.Is(err, model.ErrEmailAlreadyTaken) {
+				common.ApiErrorI18n(c, i18n.MsgUserEmailAlreadyTaken)
+				return
+			}
+			common.ApiErrorI18n(c, i18n.MsgDatabaseError)
+			return
+		}
+	}
+	inviterId, _ := model.GetUserIdByAffCode(request.AffCode)
+	cleanUser := model.User{Username: user.Username, Password: user.Password, DisplayName: user.Username, Role: common.RoleCommonUser, InviterId: inviterId}
+	if common.EmailVerificationEnabled {
+		cleanUser.Email = request.Email
+	}
 	err = model.DB.Transaction(func(tx *gorm.DB) error {
-		if err := cleanUser.InsertWithTx(tx, 0); err != nil {
+		if err := cleanUser.InsertWithTx(tx, inviterId); err != nil {
 			return err
 		}
 		return model.ConsumeInvitationWithTx(tx, request.InvitationCode, cleanUser.Id)
@@ -138,7 +164,7 @@ func InvitationRegister(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
-	cleanUser.FinishInsert(0)
+	cleanUser.FinishInsert(inviterId)
 	common.ApiSuccess(c, nil)
 }
 

@@ -46,6 +46,10 @@ import { OAuthProviders } from '@/features/auth/components/oauth-providers'
 import { loginFormSchema } from '@/features/auth/constants'
 import { useAuthRedirect } from '@/features/auth/hooks/use-auth-redirect'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
+import {
+  getInvitationCode,
+  saveInvitationCode,
+} from '@/features/auth/lib/storage'
 import { beginPasskeyLogin, finishPasskeyLogin } from '@/features/auth/passkey'
 import type { AuthFormProps } from '@/features/auth/types'
 import { useStatus } from '@/hooks/use-status'
@@ -68,6 +72,7 @@ export function UserAuthForm({
   const [isLoading, setIsLoading] = useState(false)
   const [wechatCode, setWeChatCode] = useState('')
   const [agreedToLegal, setAgreedToLegal] = useState(false)
+  const [invitationCode, setInvitationCode] = useState('')
   const [passkeySupported, setPasskeySupported] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [isWeChatDialogOpen, setIsWeChatDialogOpen] = useState(false)
@@ -111,6 +116,10 @@ export function UserAuthForm({
     status?.telegram_oauth ||
     (status?.custom_oauth_providers?.length ?? 0) > 0
   )
+  const linuxDOInvitationRequired = Boolean(
+    status?.linuxdo_oauth_invitation_required ??
+    status?.data?.linuxdo_oauth_invitation_required
+  )
   const hasAlternativeLogin =
     passkeyLoginEnabled || hasWeChatLogin || hasOAuthLogin
 
@@ -121,6 +130,19 @@ export function UserAuthForm({
       setAgreedToLegal(true)
     }
   }, [requiresLegalConsent])
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const code = (
+      searchParams.get('invitation_code') ||
+      searchParams.get('invite') ||
+      getInvitationCode()
+    ).trim()
+    if (code) {
+      setInvitationCode(code)
+      saveInvitationCode(code)
+    }
+  }, [])
 
   useEffect(() => {
     detectPasskeySupport()
@@ -331,12 +353,30 @@ export function UserAuthForm({
       )}
 
       {/* OAuth Providers */}
+      {status?.linuxdo_oauth && linuxDOInvitationRequired && (
+        <div className='grid gap-2'>
+          <Label htmlFor='linuxdo-invitation-code'>
+            {t('Invitation code for new LinuxDO users')}
+          </Label>
+          <Input
+            id='linuxdo-invitation-code'
+            placeholder={t('Enter invitation code')}
+            value={invitationCode}
+            onChange={(event) => {
+              setInvitationCode(event.target.value)
+              saveInvitationCode(event.target.value)
+            }}
+            autoComplete='off'
+          />
+        </div>
+      )}
       <OAuthProviders
         status={status}
         redirectTo={redirectTo}
         disabled={isLoading || (requiresLegalConsent && !agreedToLegal)}
         onWeChatLogin={hasWeChatLogin ? handleOpenWeChatDialog : undefined}
         isWeChatLoading={isWeChatSubmitting}
+        invitationCode={invitationCode}
       />
     </>
   )
