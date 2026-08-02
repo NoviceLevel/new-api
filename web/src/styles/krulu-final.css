@@ -799,7 +799,9 @@ body {
 }
 
 /* Public pages (e.g. Model Square) — add room for the floating dock */
-.relative.min-h-svh.overflow-x-clip:has(.krulu-dock-outer) {
+.relative.min-h-svh.overflow-x-clip:has(.krulu-dock-outer):not(
+  :has(> .krulu-card-home)
+) {
   padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
 }
 
