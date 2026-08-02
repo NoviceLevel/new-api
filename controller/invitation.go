@@ -97,7 +97,7 @@ type invitationRegisterRequest struct {
 }
 
 func InvitationRegister(c *gin.Context) {
-	if !common.InvitationRegistrationEnabled || !common.PasswordRegisterEnabled {
+	if !common.InvitationRegistrationEnabled || !common.RegisterEnabled {
 		common.ApiErrorI18n(c, i18n.MsgUserRegisterDisabled)
 		return
 	}

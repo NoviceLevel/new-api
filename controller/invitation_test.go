@@ -21,6 +21,7 @@ func setupInvitationControllerTestDB(t *testing.T) *gorm.DB {
 	previousRedisEnabled := common.RedisEnabled
 	previousMainDatabaseType, previousLogDatabaseType := common.MainDatabaseType(), common.LogDatabaseType()
 	previousInvitationRegistrationEnabled := common.InvitationRegistrationEnabled
+	previousRegisterEnabled := common.RegisterEnabled
 	previousPasswordRegisterEnabled := common.PasswordRegisterEnabled
 	previousEmailVerificationEnabled := common.EmailVerificationEnabled
 	previousQuotaForNewUser := common.QuotaForNewUser
@@ -30,7 +31,8 @@ func setupInvitationControllerTestDB(t *testing.T) *gorm.DB {
 	common.RedisEnabled = false
 	common.SetDatabaseTypes(common.DatabaseTypeSQLite, common.DatabaseTypeSQLite)
 	common.InvitationRegistrationEnabled = true
-	common.PasswordRegisterEnabled = true
+	common.RegisterEnabled = true
+	common.PasswordRegisterEnabled = false
 	common.EmailVerificationEnabled = false
 	common.QuotaForNewUser = 0
 	common.QuotaForInvitee = 0
@@ -46,6 +48,7 @@ func setupInvitationControllerTestDB(t *testing.T) *gorm.DB {
 		common.RedisEnabled = previousRedisEnabled
 		common.SetDatabaseTypes(previousMainDatabaseType, previousLogDatabaseType)
 		common.InvitationRegistrationEnabled = previousInvitationRegistrationEnabled
+		common.RegisterEnabled = previousRegisterEnabled
 		common.PasswordRegisterEnabled = previousPasswordRegisterEnabled
 		common.EmailVerificationEnabled = previousEmailVerificationEnabled
 		common.QuotaForNewUser = previousQuotaForNewUser
