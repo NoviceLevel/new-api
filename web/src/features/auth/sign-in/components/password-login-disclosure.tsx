@@ -57,7 +57,10 @@ export function PasswordLoginDisclosure(props: PasswordLoginDisclosureProps) {
         </div>
       )}
 
-      <CollapsibleContent className='CollapsibleContent'>
+      <CollapsibleContent
+        className='CollapsibleContent'
+        style={{ animation: 'none' }}
+      >
         <div className={cn('grid gap-4', props.collapsedByDefault && 'pt-3')}>
           {props.children}
         </div>

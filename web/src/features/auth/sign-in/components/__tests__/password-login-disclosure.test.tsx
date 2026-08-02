@@ -103,6 +103,11 @@ describe('password login disclosure', () => {
 
     assert.equal(trigger.getAttribute('aria-expanded'), 'true')
     assert.ok(rendered.container.querySelector('#username'))
+    const content = rendered.container.querySelector<HTMLElement>(
+      '[data-slot="collapsible-content"]'
+    )
+    assert.ok(content)
+    assert.equal(content.style.animation, 'none')
 
     await act(async () => rendered.root.unmount())
     rendered.container.remove()
