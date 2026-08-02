@@ -60,4 +60,4 @@ bin/new-api-preview.exe
 .\bin\new-api-preview.exe
 ```
 
-更多配置请查看 [README.zh_CN.md](README.zh_CN.md) 和 [.env.example](.env.example)。
+更多配置请查看 [.env.example](.env.example)。
