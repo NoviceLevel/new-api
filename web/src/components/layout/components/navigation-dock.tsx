@@ -218,7 +218,6 @@ export function NavigationDock() {
           <span className='krulu-dock-icon' aria-hidden='true'>
             {item.icon}
           </span>
-          {active && <span className='krulu-dock-active-dot' />}
         </Link>
       </div>
     )
@@ -345,7 +344,9 @@ export function NavigationDock() {
           side='bottom'
           className='mx-auto max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-t-2xl p-4'
         >
-          <SheetHeader className='border-b pb-3'>
+          <SheetHeader
+            className={cn('border-b pb-3', !isMobile && 'sr-only')}
+          >
             <SheetTitle className='text-base font-semibold'>
               {t('Navigation')}
             </SheetTitle>
