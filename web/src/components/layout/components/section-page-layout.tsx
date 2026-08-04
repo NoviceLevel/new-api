@@ -107,12 +107,11 @@ export function SectionPageLayout(props: SectionPageLayoutProps) {
           }
         >
           {content}
+          <div
+            ref={setFooterContainer}
+            className='pt-3 pb-1 empty:hidden'
+          />
         </div>
-
-        <div
-          ref={setFooterContainer}
-          className='bg-background shrink-0 border-t px-3 py-2.5 empty:hidden sm:px-4 sm:py-3'
-        />
       </Main>
     </PageFooterProvider>
   )

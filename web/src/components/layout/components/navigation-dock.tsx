@@ -11,6 +11,7 @@ import {
   Boxes,
   Home,
   LayoutDashboard,
+  LayoutGrid,
   LogOut,
   ScanFace,
   UserRound,
@@ -20,6 +21,12 @@ import { useTranslation } from 'react-i18next'
 
 import { NotificationPopover } from '@/components/notification-popover'
 import { SignOutDialog } from '@/components/sign-out-dialog'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useSidebarView } from '@/hooks/use-sidebar-view'
 import { ROLE } from '@/lib/roles'
@@ -60,14 +67,15 @@ export function NavigationDock() {
   const user = useAuthStore((state) => state.auth.user)
   const isCommonUser = !!user && user.role < ROLE.ADMIN
   const { navGroups } = useSidebarView()
-  const notifications = useNotifications({ enabled: isCommonUser })
+  const notifications = useNotifications({ enabled: !!user })
   const panelRef = useRef<HTMLElement>(null)
   const frameRef = useRef<number | null>(null)
   const [signOutOpen, setSignOutOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [tooltip, setTooltip] = useState<DockTooltip | null>(null)
 
-  const standardItems = useMemo<DockLinkItem[]>(() => {
-    const items: DockLinkItem[] = [
+  const items = useMemo<DockLinkItem[]>(() => {
+    const list: DockLinkItem[] = [
       {
         key: 'home',
         title: t('Home'),
@@ -83,20 +91,20 @@ export function NavigationDock() {
     ]
 
     if (user) {
-      items.splice(1, 0, {
+      list.splice(1, 0, {
         key: 'console',
         title: t('Console'),
         href: '/dashboard',
         icon: <LayoutDashboard />,
       })
-      items.push({
+      list.push({
         key: 'profile',
         title: t('Profile'),
         href: '/profile',
         icon: <UserRound />,
       })
     } else {
-      items.push({
+      list.push({
         key: 'login',
         title: t('Login'),
         href: '/sign-in',
@@ -104,46 +112,8 @@ export function NavigationDock() {
       })
     }
 
-    return items
+    return list
   }, [t, user])
-
-  const userItems = useMemo<DockLinkItem[]>(() => {
-    const items: DockLinkItem[] = [
-      {
-        key: 'home',
-        title: t('Home'),
-        href: '/',
-        icon: <Home />,
-      },
-      {
-        key: 'pricing',
-        title: t('Model Square'),
-        href: '/pricing',
-        icon: <Boxes />,
-      },
-    ]
-
-    navGroups.forEach((group) => {
-      group.items.forEach((item) => {
-        const links = isDockLinkItem(item) ? [item] : item.items
-        links.forEach((link) => {
-          if (!link.url || !link.icon) return
-          const Icon = link.icon as React.ComponentType<{ className?: string }>
-          items.push({
-            key: String(link.url),
-            title: link.title,
-            href: String(link.url),
-            icon: <Icon />,
-            activeUrls: link.activeUrls?.map(String),
-          })
-        })
-      })
-    })
-
-    return items
-  }, [navGroups, t])
-
-  const items = isCommonUser ? userItems : standardItems
 
   const updateMagnification = useCallback((clientX: number | null) => {
     const panel = panelRef.current
@@ -202,10 +172,13 @@ export function NavigationDock() {
           <span className='krulu-dock-icon' aria-hidden='true'>
             {item.icon}
           </span>
+          {active && <span className='krulu-dock-active-dot' />}
         </Link>
       </div>
     )
   }
+
+  const hasExtraNav = navGroups.some((group) => group.items.length > 0)
 
   return (
     <>
@@ -226,6 +199,30 @@ export function NavigationDock() {
             }}
           >
             {items.map(renderDockLink)}
+
+            {user && hasExtraNav && (
+              <div
+                className='krulu-dock-item'
+                onMouseEnter={(event) =>
+                  showTooltip(event.currentTarget, t('Navigation'))
+                }
+                onFocusCapture={(event) =>
+                  showTooltip(event.currentTarget as HTMLElement, t('Navigation'))
+                }
+                onBlurCapture={() => setTooltip(null)}
+              >
+                <button
+                  type='button'
+                  className='krulu-dock-link'
+                  aria-label={t('Navigation')}
+                  onClick={() => setMoreOpen(true)}
+                >
+                  <span className='krulu-dock-icon' aria-hidden='true'>
+                    <LayoutGrid />
+                  </span>
+                </button>
+              </div>
+            )}
 
             {isCommonUser && (
               <div
@@ -295,6 +292,60 @@ export function NavigationDock() {
           {tooltip.label}
         </div>
       )}
+
+      {/* Navigation Drawer Sheet for extra links */}
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+        <SheetContent
+          side='bottom'
+          className='mx-auto max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-t-2xl p-4'
+        >
+          <SheetHeader className='border-b pb-3'>
+            <SheetTitle className='text-base font-semibold'>
+              {t('Navigation')}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className='flex flex-col gap-4 py-3'>
+            {navGroups.map((group, groupIdx) => (
+              <div key={groupIdx} className='flex flex-col gap-2'>
+                {group.title && (
+                  <span className='text-muted-foreground px-1 text-xs font-semibold uppercase tracking-wider'>
+                    {group.title}
+                  </span>
+                )}
+                <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                  {group.items.map((item) => {
+                    const links = isDockLinkItem(item) ? [item] : (item.items || [])
+                    return links.map((link) => {
+                      if (!link.url) return null
+                      const Icon = (link.icon as React.ComponentType<{ className?: string }>) || LayoutGrid
+                      const active =
+                        pathname === link.url ||
+                        pathname.startsWith(`${link.url}/`)
+                      return (
+                        <Link
+                          key={String(link.url)}
+                          to={String(link.url)}
+                          onClick={() => setMoreOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2.5 rounded-xl border p-2.5 text-sm font-medium transition-colors',
+                            active
+                              ? 'bg-primary/10 text-primary border-primary/30 font-semibold'
+                              : 'hover:bg-muted/80 border-border/40 text-foreground/80'
+                          )}
+                        >
+                          <Icon className='size-4 shrink-0' />
+                          <span className='truncate'>{link.title}</span>
+                        </Link>
+                      )
+                    })
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <SignOutDialog open={signOutOpen} onOpenChange={setSignOutOpen} />
     </>
