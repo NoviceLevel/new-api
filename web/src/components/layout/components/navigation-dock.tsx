@@ -27,6 +27,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useSidebarView } from '@/hooks/use-sidebar-view'
 import { ROLE } from '@/lib/roles'
@@ -66,6 +67,7 @@ export function NavigationDock() {
   const pathname = useLocation({ select: (location) => location.pathname })
   const user = useAuthStore((state) => state.auth.user)
   const isCommonUser = !!user && user.role < ROLE.ADMIN
+  const isMobile = useIsMobile()
   const { navGroups } = useSidebarView()
   const notifications = useNotifications({ enabled: !!user })
   const panelRef = useRef<HTMLElement>(null)
@@ -74,7 +76,7 @@ export function NavigationDock() {
   const [moreOpen, setMoreOpen] = useState(false)
   const [tooltip, setTooltip] = useState<DockTooltip | null>(null)
 
-  const items = useMemo<DockLinkItem[]>(() => {
+  const standardItems = useMemo<DockLinkItem[]>(() => {
     const list: DockLinkItem[] = [
       {
         key: 'home',
@@ -114,6 +116,50 @@ export function NavigationDock() {
 
     return list
   }, [t, user])
+
+  const userItems = useMemo<DockLinkItem[]>(() => {
+    const list: DockLinkItem[] = [
+      {
+        key: 'home',
+        title: t('Home'),
+        href: '/',
+        icon: <Home />,
+      },
+      {
+        key: 'pricing',
+        title: t('Model Square'),
+        href: '/pricing',
+        icon: <Boxes />,
+      },
+    ]
+
+    navGroups.forEach((group) => {
+      group.items.forEach((item) => {
+        const links = isDockLinkItem(item) ? [item] : item.items || []
+        links.forEach((link) => {
+          if (!link.url || !link.icon) return
+          const Icon = link.icon as React.ComponentType<{ className?: string }>
+          if (list.some((existing) => existing.href === link.url)) return
+          list.push({
+            key: String(link.url),
+            title: link.title,
+            href: String(link.url),
+            icon: <Icon />,
+            activeUrls: link.activeUrls?.map(String),
+          })
+        })
+      })
+    })
+
+    return list
+  }, [navGroups, t])
+
+  const items = useMemo(() => {
+    if (!isMobile && isCommonUser) {
+      return userItems
+    }
+    return standardItems
+  }, [isMobile, isCommonUser, userItems, standardItems])
 
   const updateMagnification = useCallback((clientX: number | null) => {
     const panel = panelRef.current
@@ -202,7 +248,7 @@ export function NavigationDock() {
 
             {user && hasExtraNav && (
               <div
-                className='krulu-dock-item'
+                className='krulu-dock-item md:hidden'
                 onMouseEnter={(event) =>
                   showTooltip(event.currentTarget, t('Navigation'))
                 }
