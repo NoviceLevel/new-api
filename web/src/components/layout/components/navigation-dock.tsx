@@ -224,6 +224,7 @@ export function NavigationDock() {
   }
 
   const hasExtraNav = navGroups.some((group) => group.items.length > 0)
+  const canShowMoreNavigation = isMobile && !!user && hasExtraNav
 
   return (
     <>
@@ -245,7 +246,7 @@ export function NavigationDock() {
           >
             {items.map(renderDockLink)}
 
-            {user && hasExtraNav && (
+            {canShowMoreNavigation && (
               <div
                 className='krulu-dock-item md:hidden'
                 onMouseEnter={(event) =>
@@ -339,7 +340,12 @@ export function NavigationDock() {
       )}
 
       {/* Navigation Drawer Sheet for extra links */}
-      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+      <Sheet
+        open={canShowMoreNavigation && moreOpen}
+        onOpenChange={(open) =>
+          setMoreOpen(canShowMoreNavigation && open)
+        }
+      >
         <SheetContent
           side='bottom'
           className='mx-auto max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-t-2xl p-4'
