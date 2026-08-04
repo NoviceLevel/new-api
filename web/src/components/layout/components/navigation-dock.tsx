@@ -340,7 +340,7 @@ export function NavigationDock() {
       )}
 
       {/* Navigation Drawer Sheet for extra links */}
-      <Sheet open={moreSheetOpen} onOpenChange={setMoreSheetOpen}>
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
         <SheetContent
           side='bottom'
           className='mx-auto max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-t-2xl p-4'
@@ -372,7 +372,7 @@ export function NavigationDock() {
                         <Link
                           key={String(link.url)}
                           to={String(link.url)}
-                          onClick={() => setMoreSheetOpen(false)}
+                          onClick={() => setMoreOpen(false)}
                           className={cn(
                             'flex items-center gap-2.5 rounded-xl border p-2.5 text-sm font-medium transition-colors',
                             active
