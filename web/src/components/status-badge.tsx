@@ -90,6 +90,30 @@ export const textColorMap = {
   yellow: 'text-warning',
 } as const
 
+export const bgVariantMap = {
+  success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+  green: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+  'light-green': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+  warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+  amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+  orange: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+  yellow: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25',
+  danger: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25',
+  red: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25',
+  info: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25',
+  blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25',
+  neutral: 'bg-muted/80 text-muted-foreground border-border/60',
+  grey: 'bg-muted/80 text-muted-foreground border-border/60',
+  purple: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25',
+  violet: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25',
+  cyan: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
+  teal: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/25',
+  indigo: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/25',
+  'light-blue': 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25',
+  lime: 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-500/25',
+  pink: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/25',
+} as const
+
 export type StatusVariant = keyof typeof dotColorMap
 
 /** Controls the visual style of the badge.
@@ -182,14 +206,14 @@ export function StatusBadge({
     <span
       data-slot='status-badge'
       className={cn(
-        'inline-flex w-fit max-w-full min-w-0 shrink items-center font-medium tracking-normal whitespace-nowrap transition-colors',
+        'inline-flex w-fit max-w-full min-w-0 shrink items-center font-medium tracking-normal whitespace-nowrap transition-all',
         isBadge
-          ? cn('rounded-4xl', sizeMap[size ?? 'sm'])
+          ? cn('rounded-full border px-2.5 shadow-2xs', sizeMap[size ?? 'sm'], bgVariantMap[computedVariant] ?? textColorMap[computedVariant])
           : cn(
               textSizeMap[size ?? 'sm'],
+              textColorMap[computedVariant],
               type === 'underline' && 'border-b border-current pb-px'
             ),
-        textColorMap[computedVariant],
         pulse && 'animate-pulse',
         copyable &&
           'cursor-copy hover:brightness-95 active:scale-95 dark:hover:brightness-110',
