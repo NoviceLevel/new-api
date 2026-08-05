@@ -112,21 +112,25 @@ func GetUserModelHealth(c *gin.Context) {
 		modelNames = append(modelNames, key.name)
 	}
 	var metadata []struct {
-		ModelName string
-		Icon      string
+		ModelName  string
+		Icon       string
+		VendorIcon string
 	}
 	if len(modelNames) > 0 {
 		if err := model.DB.Model(&model.Model{}).
-			Select("model_name, icon").
-			Where("model_name IN ?", modelNames).
+			Select("models.model_name, models.icon, vendors.icon AS vendor_icon").
+			Joins("LEFT JOIN vendors ON vendors.id = models.vendor_id").
+			Where("models.model_name IN ?", modelNames).
 			Find(&metadata).Error; err != nil {
 			common.ApiError(c, err)
 			return
 		}
 	}
 	iconByModel := make(map[string]string, len(metadata))
+	vendorIconByModel := make(map[string]string, len(metadata))
 	for _, meta := range metadata {
 		iconByModel[meta.ModelName] = meta.Icon
+		vendorIconByModel[meta.ModelName] = meta.VendorIcon
 	}
 	sort.Slice(keys, func(i, j int) bool {
 		if keys[i].name == keys[j].name {
@@ -150,7 +154,7 @@ func GetUserModelHealth(c *gin.Context) {
 		models = append(models, modelHealthModel{
 			ModelName:   key.name,
 			DisplayName: key.name,
-			Icon:        modelHealthIcon(key.name, iconByModel[key.name]),
+			Icon:        modelHealthIcon(key.name, iconByModel[key.name], vendorIconByModel[key.name]),
 			ChannelID:   key.channel,
 			Buckets:     buckets,
 		})
@@ -168,9 +172,12 @@ func GetUserModelHealth(c *gin.Context) {
 // modelHealthIcon follows the icon metadata used by the model plaza. Some
 // custom models do not have a stored icon, so use the plaza's provider-name
 // fallback for the common model families.
-func modelHealthIcon(modelName, metadataIcon string) string {
+func modelHealthIcon(modelName, metadataIcon, vendorIcon string) string {
 	if strings.TrimSpace(metadataIcon) != "" {
 		return metadataIcon
+	}
+	if strings.TrimSpace(vendorIcon) != "" {
+		return vendorIcon
 	}
 	name := strings.ToLower(modelName)
 	switch {
