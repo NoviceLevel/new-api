@@ -200,13 +200,22 @@ export function StatusBadge({
       {...props}
     >
       {showDot && (
-        <span
-          className={cn(
-            'inline-block size-1.5 shrink-0 rounded-full',
-            dotColorMap[computedVariant]
+        <span className='relative flex size-2 items-center justify-center shrink-0 me-0.5' aria-hidden='true'>
+          {pulse && (
+            <span
+              className={cn(
+                'absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping',
+                dotColorMap[computedVariant]
+              )}
+            />
           )}
-          aria-hidden='true'
-        />
+          <span
+            className={cn(
+              'relative inline-flex size-1.5 rounded-full',
+              dotColorMap[computedVariant]
+            )}
+          />
+        </span>
       )}
       {Icon && <Icon className='size-3.5 shrink-0' />}
       {content}

@@ -47,7 +47,7 @@ export const sideDrawerFooterClassName = (className?: string) =>
 
 export const sideDrawerSectionClassName = (className?: string) =>
   cn(
-    'border-border/60 flex flex-col gap-4 border-b pb-6 last:border-b-0 last:pb-0',
+    'rounded-xl border border-border/60 bg-card/40 p-4 sm:p-5 flex flex-col gap-4 shadow-2xs transition-colors',
     className
   )
 
