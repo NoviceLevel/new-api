@@ -119,7 +119,7 @@ export function getLobeIcon(
     | undefined
 
   let IconComponent: React.ComponentType<Record<string, unknown>> | undefined
-  let propStartIndex: number
+  let propStartIndex = 1
 
   if (BaseIcon && segments.length > 1) {
     const subKey = segments[1]
