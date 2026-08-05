@@ -78,6 +78,8 @@ var defaultCacheRatio = map[string]float64{
 	"claude-opus-4-8-high":                0.1,
 	"claude-opus-4-8-medium":              0.1,
 	"claude-opus-4-8-low":                 0.1,
+	"step-3.7-flash":                       0.2,
+	"step-3.5-flash":                       0.2,
 }
 
 var defaultCreateCacheRatio = map[string]float64{
@@ -147,7 +149,7 @@ func CreateCacheRatio2JSONString() string {
 
 // UpdateCacheRatioByJSONString updates the cache ratio map from a JSON string
 func UpdateCacheRatioByJSONString(jsonStr string) error {
-	return types.LoadFromJsonStringWithCallback(cacheRatioMap, jsonStr, InvalidateExposedDataCache)
+	return types.LoadFromJsonStringWithDefaultsAndCallback(cacheRatioMap, jsonStr, defaultCacheRatio, InvalidateExposedDataCache)
 }
 
 // UpdateCreateCacheRatioByJSONString updates the create cache ratio map from a JSON string

@@ -231,6 +231,21 @@ var defaultModelRatio = map[string]float64{
 	"yi-large-turbo":         12.0 / 1000 * RMB,
 	"yi-large-preview":       20.0 / 1000 * RMB,
 	"yi-large-rag-preview":   25.0 / 1000 * RMB,
+
+	// Stepfun (阶跃星辰)
+	// 输入(未命中): 1.35元/1M, 输入(命中): 0.27元/1M, 输出: 8.1元/1M
+	"step-3.7-flash": 1.35 / 1000 * RMB,
+	"step-3.5-flash": 1.35 / 1000 * RMB,
+	"step-1-flash":   1.0 / 1000 * RMB,
+	"step-1.5v-mini": 1.0 / 1000 * RMB,
+	"step-1.5v-seo":  2.0 / 1000 * RMB,
+	"step-1v-8k":     5.0 / 1000 * RMB,
+	"step-1v-32k":    15.0 / 1000 * RMB,
+	"step-1-8k":      5.0 / 1000 * RMB,
+	"step-1-32k":     15.0 / 1000 * RMB,
+	"step-1-128k":    40.0 / 1000 * RMB,
+	"step-1-256k":    80.0 / 1000 * RMB,
+	"step-2-16k":     38.0 / 1000 * RMB,
 	"command":                0.5,
 	"command-nightly":        0.5,
 	"command-light":          0.5,
@@ -330,6 +345,18 @@ var defaultCompletionRatio = map[string]float64{
 	"gpt-4o-gizmo-*": 3,
 	"gpt-4-all":      2,
 	"gpt-image-1":    8,
+	"step-3.7-flash": 6,
+	"step-3.5-flash": 6,
+	"step-1-flash":   2,
+	"step-1.5v-mini": 2,
+	"step-1.5v-seo":  2,
+	"step-1v-8k":     2,
+	"step-1v-32k":    2,
+	"step-1-8k":      2,
+	"step-1-32k":     2,
+	"step-1-128k":    2,
+	"step-1-256k":    2,
+	"step-2-16k":     2,
 }
 
 // InitRatioSettings initializes all model related settings maps
@@ -382,7 +409,7 @@ func GetModelPrice(name string, printErr bool) (float64, bool) {
 }
 
 func UpdateModelRatioByJSONString(jsonStr string) error {
-	return types.LoadFromJsonStringWithCallback(modelRatioMap, jsonStr, InvalidateExposedDataCache)
+	return types.LoadFromJsonStringWithDefaultsAndCallback(modelRatioMap, jsonStr, defaultModelRatio, InvalidateExposedDataCache)
 }
 
 // 处理带有思考预算的模型名称，方便统一定价
@@ -430,7 +457,7 @@ func CompletionRatio2JSONString() string {
 }
 
 func UpdateCompletionRatioByJSONString(jsonStr string) error {
-	return types.LoadFromJsonStringWithCallback(completionRatioMap, jsonStr, InvalidateExposedDataCache)
+	return types.LoadFromJsonStringWithDefaultsAndCallback(completionRatioMap, jsonStr, defaultCompletionRatio, InvalidateExposedDataCache)
 }
 
 func GetCompletionRatio(name string) float64 {

@@ -93,6 +93,25 @@ func LoadFromJsonStringWithCallback[K comparable, V any](m *RWMap[K, V], jsonStr
 	return err
 }
 
+// LoadFromJsonStringWithDefaultsAndCallback loads a JSON string into the RWMap, merges missing default entries, and calls callback on success.
+func LoadFromJsonStringWithDefaultsAndCallback[K comparable, V any](m *RWMap[K, V], jsonStr string, defaults map[K]V, onSuccess func()) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.data = make(map[K]V)
+	err := common.Unmarshal([]byte(jsonStr), &m.data)
+	if err == nil {
+		for k, v := range defaults {
+			if _, ok := m.data[k]; !ok {
+				m.data[k] = v
+			}
+		}
+		if onSuccess != nil {
+			onSuccess()
+		}
+	}
+	return err
+}
+
 // MarshalJSONString returns the JSON string representation of the RWMap.
 func (m *RWMap[K, V]) MarshalJSONString() string {
 	bytes, err := m.MarshalJSON()
