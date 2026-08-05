@@ -28,6 +28,11 @@ func TestModelHealthIcon(t *testing.T) {
 			want:       "Stepfun.Color",
 		},
 		{
+			name:      "uses StepFun family fallback without metadata",
+			modelName: "step-3.7-flash",
+			want:      "Stepfun",
+		},
+		{
 			name:      "uses family fallback without metadata",
 			modelName: "qwen3.6-27b",
 			want:      "Qwen.Color",

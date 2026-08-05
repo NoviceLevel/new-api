@@ -193,6 +193,8 @@ func modelHealthIcon(modelName, metadataIcon, vendorIcon string) string {
 		return "DeepSeek.Color"
 	case strings.Contains(name, "qwen") || strings.Contains(name, "qwq-"):
 		return "Qwen.Color"
+	case strings.HasPrefix(name, "step"):
+		return "Stepfun"
 	}
 	return ""
 }

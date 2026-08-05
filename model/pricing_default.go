@@ -38,6 +38,12 @@ var defaultVendorRules = map[string]string{
 	"vidu":     "Vidu",
 	"step":     "阶跃星辰",
 	"step-":    "阶跃星辰",
+	"longcat":  "LongCat",
+	"mimo":     "Xiaomi",
+	"xiaomi":   "Xiaomi",
+	"pplx":     "Perplexity",
+	"perplexity": "Perplexity",
+	"silicon":  "SiliconFlow",
 }
 
 // 供应商默认图标映射
@@ -65,9 +71,15 @@ var defaultVendorIcons = map[string]string{
 	"快手":         "Kling.Color",
 	"即梦":         "Jimeng.Color",
 	"Vidu":       "Vidu",
-	"阶跃星辰":     "Stepfun.Color",
-	"StepFun":    "Stepfun.Color",
-	"Stepfun":    "Stepfun.Color",
+	"阶跃星辰":     "Stepfun",
+	"StepFun":    "Stepfun",
+	"Stepfun":    "Stepfun",
+	"LongCat":    "LongCat.Color",
+	"longcat":    "LongCat.Color",
+	"Xiaomi":     "XiaomiMiMo",
+	"小米":         "XiaomiMiMo",
+	"Perplexity": "Perplexity.Color",
+	"SiliconFlow": "SiliconCloud.Color",
 	"微软":         "AzureAI",
 	"Microsoft":  "AzureAI",
 	"Azure":      "AzureAI",
@@ -77,7 +89,8 @@ var defaultVendorIcons = map[string]string{
 func initDefaultVendorMapping(metaMap map[string]*Model, vendorMap map[int]*Vendor, enableAbilities []AbilityWithChannel) {
 	for _, ability := range enableAbilities {
 		modelName := ability.Model
-		if _, exists := metaMap[modelName]; exists {
+		existingMeta, exists := metaMap[modelName]
+		if exists && existingMeta.VendorID != 0 {
 			continue
 		}
 
@@ -91,21 +104,31 @@ func initDefaultVendorMapping(metaMap map[string]*Model, vendorMap map[int]*Vend
 			}
 		}
 
-		// 创建模型元数据
-		metaMap[modelName] = &Model{
-			ModelName: modelName,
-			VendorID:  vendorID,
-			Status:    1,
-			NameRule:  NameRuleExact,
+		if exists {
+			existingMeta.VendorID = vendorID
+			_ = DB.Model(existingMeta).Update("vendor_id", vendorID).Error
+		} else {
+			// 创建模型元数据
+			metaMap[modelName] = &Model{
+				ModelName: modelName,
+				VendorID:  vendorID,
+				Status:    1,
+				NameRule:  NameRuleExact,
+			}
 		}
 	}
 }
 
 // 查找或创建供应商
 func getOrCreateVendor(vendorName string, vendorMap map[int]*Vendor) int {
+	defaultIcon := getDefaultVendorIcon(vendorName)
 	// 查找现有供应商
 	for id, vendor := range vendorMap {
 		if vendor.Name == vendorName {
+			if (vendor.Icon == "" || vendor.Icon == "Stepfun.Color") && defaultIcon != "" {
+				vendor.Icon = defaultIcon
+				_ = DB.Model(vendor).Update("icon", defaultIcon).Error
+			}
 			return id
 		}
 	}
@@ -114,7 +137,7 @@ func getOrCreateVendor(vendorName string, vendorMap map[int]*Vendor) int {
 	newVendor := &Vendor{
 		Name:   vendorName,
 		Status: 1,
-		Icon:   getDefaultVendorIcon(vendorName),
+		Icon:   defaultIcon,
 	}
 
 	if err := newVendor.Insert(); err != nil {
