@@ -24,6 +24,8 @@ import {
   type ReactNode,
 } from 'react'
 
+import { cn } from '@/lib/utils'
+
 import { Main } from './main'
 import { PageFooterProvider } from './page-footer'
 
@@ -52,9 +54,16 @@ SectionPageLayoutBreadcrumb.displayName = 'SectionPageLayout.Breadcrumb'
 export type SectionPageLayoutProps = {
   children: ReactNode
   fixedContent?: boolean
+  container?: boolean
+  containerClassName?: string
 }
 
-export function SectionPageLayout(props: SectionPageLayoutProps) {
+export function SectionPageLayout({
+  children,
+  fixedContent,
+  container = true,
+  containerClassName,
+}: SectionPageLayoutProps) {
   const [footerContainer, setFooterContainer] = useState<HTMLDivElement | null>(
     null
   )
@@ -64,7 +73,7 @@ export function SectionPageLayout(props: SectionPageLayoutProps) {
   let content: ReactNode = null
   let breadcrumb: ReactNode = null
 
-  Children.forEach(props.children, (node) => {
+  Children.forEach(children, (node) => {
     if (!isValidElement(node)) return
     const child = node as ReactElement<SlotProps>
     if (child.type === SectionPageLayoutTitle) title = child.props.children
@@ -81,36 +90,53 @@ export function SectionPageLayout(props: SectionPageLayoutProps) {
     <PageFooterProvider container={footerContainer}>
       <Main>
         <div className='shrink-0 px-3 pt-3 pb-2.5 sm:px-4 sm:pt-5 sm:pb-3'>
-          {breadcrumb != null && (
-            <div className='mb-2 sm:mb-3'>{breadcrumb}</div>
-          )}
-          <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-2 sm:gap-x-4'>
-            <div className='min-w-0 flex-1'>
-              <h2 className='truncate text-base font-bold tracking-tight sm:text-lg'>
-                {title}
-              </h2>
-            </div>
-            {actions != null && (
-              <div className='flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-x-4'>
-                {actions}
-              </div>
+          <div
+            className={cn(
+              'w-full',
+              container && 'mx-auto max-w-7xl',
+              containerClassName
             )}
+          >
+            {breadcrumb != null && (
+              <div className='mb-2 sm:mb-3'>{breadcrumb}</div>
+            )}
+            <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-2 sm:gap-x-4'>
+              <div className='min-w-0 flex-1'>
+                <h2 className='truncate text-base font-bold tracking-tight sm:text-lg'>
+                  {title}
+                </h2>
+              </div>
+              {actions != null && (
+                <div className='flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-x-4'>
+                  {actions}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div
           data-slot='section-page-content'
           className={
-            props.fixedContent
+            fixedContent
               ? 'min-h-0 flex-1 overflow-hidden px-3 pt-1 pb-3 sm:px-4 sm:pt-1.5 sm:pb-4'
               : 'min-h-0 flex-1 overflow-auto px-3 pt-1 pb-3 sm:px-4 sm:pt-1.5 sm:pb-4'
           }
         >
-          {content}
           <div
-            ref={setFooterContainer}
-            className='pt-3 pb-1 empty:hidden'
-          />
+            className={cn(
+              'w-full',
+              container && 'mx-auto max-w-7xl',
+              fixedContent && 'flex h-full flex-col min-h-0',
+              containerClassName
+            )}
+          >
+            {content}
+            <div
+              ref={setFooterContainer}
+              className='pt-3 pb-1 empty:hidden'
+            />
+          </div>
         </div>
       </Main>
     </PageFooterProvider>
