@@ -102,23 +102,50 @@ export function getLobeIcon(
   // Parse component path and chained properties
   const segments = trimmedName.split('.')
   const baseKey = segments[0]
-  const BaseIcon = (LobeIcons as Record<string, unknown>)[baseKey] as
+  const iconsDict = LobeIcons as Record<string, unknown>
+
+  let actualBaseKey = baseKey
+  if (!iconsDict[actualBaseKey]) {
+    const foundKey = Object.keys(iconsDict).find(
+      (k) => k.toLowerCase() === baseKey.toLowerCase()
+    )
+    if (foundKey) {
+      actualBaseKey = foundKey
+    }
+  }
+
+  const BaseIcon = iconsDict[actualBaseKey] as
     | Record<string, unknown>
     | undefined
 
   let IconComponent: React.ComponentType<Record<string, unknown>> | undefined
   let propStartIndex: number
 
-  if (BaseIcon && segments.length > 1 && BaseIcon[segments[1]]) {
-    IconComponent = BaseIcon[segments[1]] as React.ComponentType<
-      Record<string, unknown>
-    >
-    propStartIndex = 2
-  } else {
-    IconComponent = (LobeIcons as Record<string, unknown>)[baseKey] as
+  if (BaseIcon && segments.length > 1) {
+    const subKey = segments[1]
+    let actualSubKey = subKey
+    if (!BaseIcon[actualSubKey] && typeof BaseIcon === 'object' && BaseIcon !== null) {
+      const foundSubKey = Object.keys(BaseIcon).find(
+        (k) => k.toLowerCase() === subKey.toLowerCase()
+      )
+      if (foundSubKey) {
+        actualSubKey = foundSubKey
+      }
+    }
+
+    if (BaseIcon[actualSubKey]) {
+      IconComponent = BaseIcon[actualSubKey] as React.ComponentType<
+        Record<string, unknown>
+      >
+      propStartIndex = 2
+    }
+  }
+
+  if (!IconComponent) {
+    IconComponent = iconsDict[actualBaseKey] as
       | React.ComponentType<Record<string, unknown>>
       | undefined
-    propStartIndex = segments.length > 1 && /^[A-Z]/.test(segments[1]) ? 2 : 1
+    propStartIndex = segments.length > 1 && /^[A-Za-z]/.test(segments[1]) ? 2 : 1
   }
 
   // Fallback if icon not found

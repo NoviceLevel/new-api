@@ -77,6 +77,7 @@ export function getChannelTypeIcon(type: number): string {
     19: 'Ai360', // 360
     25: 'Moonshot', // Moonshot
     31: 'Yi', // LingYiWanWu
+    32: 'Stepfun', // StepFun
     35: 'Minimax', // MiniMax
     45: 'Volcengine', // VolcEngine
 

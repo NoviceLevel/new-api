@@ -36,6 +36,8 @@ var defaultVendorRules = map[string]string{
 	"kling":    "快手",
 	"jimeng":   "即梦",
 	"vidu":     "Vidu",
+	"step":     "阶跃星辰",
+	"step-":    "阶跃星辰",
 }
 
 // 供应商默认图标映射
@@ -63,6 +65,9 @@ var defaultVendorIcons = map[string]string{
 	"快手":         "Kling.Color",
 	"即梦":         "Jimeng.Color",
 	"Vidu":       "Vidu",
+	"阶跃星辰":     "Stepfun.Color",
+	"StepFun":    "Stepfun.Color",
+	"Stepfun":    "Stepfun.Color",
 	"微软":         "AzureAI",
 	"Microsoft":  "AzureAI",
 	"Azure":      "AzureAI",

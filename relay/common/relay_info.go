@@ -339,6 +339,7 @@ var streamSupportedChannels = map[int]bool{
 	constant.ChannelTypeSubmodel:       true,
 	constant.ChannelTypeCodex:          true,
 	constant.ChannelTypeMoonshot:       true,
+	constant.ChannelTypeStepFun:        true,
 	constant.ChannelTypeMiniMax:        true,
 	constant.ChannelTypeSiliconFlow:    true,
 	constant.ChannelTypeAdvancedCustom: true,

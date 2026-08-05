@@ -103,6 +103,17 @@ export const CHANNEL_TYPE_CONFIGS: Record<number, ChannelTypeConfig> = {
       other: 'Region config: {"default": "us-central1"}',
     },
   },
+  32: {
+    id: 32,
+    name: CHANNEL_TYPES[32],
+    icon: 'Stepfun',
+    defaultBaseUrl: 'https://api.stepfun.com',
+    hints: {
+      baseUrl: 'Default: https://api.stepfun.com',
+      key: 'Format: sk-...',
+      models: 'step-3.7-flash,step-1.5v-mini,step-1.5v-seo,step-1v-8k,step-1v-32k,step-1-8k,step-1-32k,step-1-128k,step-1-256k,step-2-16k,step-1-flash',
+    },
+  },
   43: {
     id: 43,
     name: CHANNEL_TYPES[43],

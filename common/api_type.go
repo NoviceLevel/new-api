@@ -67,6 +67,8 @@ func ChannelType2APIType(channelType int) (int, bool) {
 		apiType = constant.APITypeJimeng
 	case constant.ChannelTypeMoonshot:
 		apiType = constant.APITypeMoonshot
+	case constant.ChannelTypeStepFun:
+		apiType = constant.APITypeOpenAI
 	case constant.ChannelTypeSubmodel:
 		apiType = constant.APITypeSubmodel
 	case constant.ChannelTypeMiniMax:
