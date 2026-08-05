@@ -47,7 +47,7 @@ export const sideDrawerFooterClassName = (className?: string) =>
 
 export const sideDrawerSectionClassName = (className?: string) =>
   cn(
-    'rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 flex flex-col gap-4 shadow-xs transition-all hover:border-border hover:bg-card/80',
+    'border-border/60 flex flex-col gap-4 border-b pb-6 last:border-b-0 last:pb-0',
     className
   )
 
@@ -77,11 +77,11 @@ export function SideDrawerSectionHeader(props: {
 }) {
   return createElement(
     'div',
-    { className: cn('flex items-start gap-3 border-b border-border/40 pb-3 mb-1', props.className) },
+    { className: cn('flex items-start gap-3', props.className) },
     props.icon
       ? createElement(
           IconBadge,
-          { tone: props.iconTone ?? 'primary', size: 'md' },
+          { tone: props.iconTone, size: 'md' },
           props.icon
         )
       : null,
@@ -90,13 +90,13 @@ export function SideDrawerSectionHeader(props: {
       { className: 'min-w-0 flex-1' },
       createElement(
         'h3',
-        { className: 'text-sm font-semibold tracking-tight text-foreground flex items-center gap-2' },
+        { className: 'text-sm leading-none font-semibold tracking-tight' },
         props.title
       ),
       props.description
         ? createElement(
             'p',
-            { className: 'text-muted-foreground mt-0.5 text-xs leading-5' },
+            { className: 'text-muted-foreground mt-1 text-xs leading-5' },
             props.description
           )
         : null

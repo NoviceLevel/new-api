@@ -140,7 +140,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   }
 
   return (
-    <div className='inline-flex items-center gap-0.5 rounded-lg border border-border/50 bg-muted/30 p-0.5 shadow-2xs'>
+    <div className='-ml-1.5 flex items-center gap-1'>
       <Tooltip>
         <TooltipTrigger
           render={
@@ -152,7 +152,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             />
           }
         >
-          <Pencil className='size-4' />
+          <Pencil />
         </TooltipTrigger>
         <TooltipContent>{t('Edit')}</TooltipContent>
       </Tooltip>
